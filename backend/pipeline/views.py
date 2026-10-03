@@ -21,6 +21,8 @@ class PipelineStageViewSet(viewsets.ModelViewSet):
     serializer_class = PipelineStageSerializer
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):  # schema generation has no user
+            return PipelineStage.objects.none()
         # Tenant isolation: every query is scoped to the caller.
         return PipelineStage.objects.filter(user=self.request.user)
 
@@ -52,6 +54,8 @@ class CompanyViewSet(viewsets.ModelViewSet):
     serializer_class = CompanySerializer
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Company.objects.none()
         return Company.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
@@ -73,6 +77,8 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
     serializer_class = JobApplicationSerializer
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return JobApplication.objects.none()
         return (
             JobApplication.objects.filter(user=self.request.user)
             .select_related("company", "stage")
