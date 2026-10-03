@@ -84,7 +84,7 @@ export function ApplicationDetailsPanel({ application, stages, onClose }: Props)
         tabIndex={-1}
         aria-label="Application details"
         onKeyDown={onKeyDown}
-        className="fixed inset-0 z-30 flex flex-col overflow-y-auto bg-surface lg:static lg:z-auto lg:w-[26rem] lg:shrink-0 lg:border-l lg:border-line"
+        className="fixed inset-0 z-30 flex flex-col overflow-y-auto bg-surface focus-visible:outline-none lg:static lg:z-auto lg:w-[26rem] lg:shrink-0 lg:border-l lg:border-line"
       >
         <header className="flex items-start gap-3 border-b border-line px-5 py-4">
           <div className="min-w-0 flex-1">

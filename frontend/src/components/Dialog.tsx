@@ -70,7 +70,7 @@ export function Dialog({ title, onClose, children, variant = 'modal' }: Props) {
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={onKeyDown}
-        className={`flex max-h-full w-full flex-col overflow-hidden bg-surface ${
+        className={`flex max-h-full w-full flex-col overflow-hidden bg-surface focus-visible:outline-none ${
           isDrawer ? 'h-full sm:max-w-md' : 'rounded-t-xl sm:max-w-lg sm:rounded-xl'
         }`}
       >
