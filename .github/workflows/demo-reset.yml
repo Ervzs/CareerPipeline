@@ -1,0 +1,45 @@
+name: Reset demo account
+
+# Rebuilds the public demo account (sample companies and applications) every day so
+# visitors who rearranged or deleted things always find a clean board.
+on:
+  schedule:
+    - cron: "17 4 * * *" # 04:17 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: demo-reset
+  cancel-in-progress: false
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DEBUG: "False"
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      DEMO_EMAIL: ${{ secrets.DEMO_EMAIL }}
+      DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Check the secrets are set
+        run: |
+          for name in DATABASE_URL SECRET_KEY DEMO_EMAIL DEMO_PASSWORD; do
+            if [ -z "${!name}" ]; then echo "Missing repository secret: $name"; exit 1; fi
+          done
+      - name: Apply migrations (no-op when already up to date)
+        run: python manage.py migrate --no-input
+      - name: Reset the demo account
+        run: python manage.py seed_demo
