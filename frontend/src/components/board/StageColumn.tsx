@@ -10,10 +10,11 @@ interface Props {
   index: number
   applications: Application[]
   onOpen?: (application: Application) => void
+  onAdd?: (stageId: number) => void
 }
 
 /** One column. The coloured line on top is the stage's "rail line". */
-export function StageColumn({ stage, index, applications, onOpen }: Props) {
+export function StageColumn({ stage, index, applications, onOpen, onAdd }: Props) {
   const headingId = `stage-${stage.id}`
   const { setNodeRef, isOver } = useDroppable({ id: columnDropId(stage.id) })
 
@@ -27,8 +28,23 @@ export function StageColumn({ stage, index, applications, onOpen }: Props) {
         <h2 id={headingId} className="text-base font-bold">
           {stage.name}
         </h2>
-        <span className="text-sm text-ink-soft" aria-label={`${applications.length} applications`}>
-          {applications.length}
+        <span className="flex items-center gap-2">
+          <span
+            className="text-sm text-ink-soft"
+            aria-label={`${applications.length} applications`}
+          >
+            {applications.length}
+          </span>
+          {onAdd && (
+            <button
+              type="button"
+              className="rounded px-1.5 text-lg leading-none text-ink-soft hover:bg-mist hover:text-ink"
+              aria-label={`Add application to ${stage.name}`}
+              onClick={() => onAdd(stage.id)}
+            >
+              +
+            </button>
+          )}
         </span>
       </header>
       <SortableContext items={applications.map((a) => a.id)} strategy={verticalListSortingStrategy}>

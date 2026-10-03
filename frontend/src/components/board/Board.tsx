@@ -32,9 +32,10 @@ interface Props {
   stages: Stage[]
   applications: Application[]
   onOpen?: (application: Application) => void
+  onAdd?: (stageId: number) => void
 }
 
-export function Board({ stages, applications, onOpen }: Props) {
+export function Board({ stages, applications, onOpen, onAdd }: Props) {
   const move = useMoveApplication()
 
   const byId = useMemo(() => new Map(applications.map((a) => [a.id, a])), [applications])
@@ -134,6 +135,7 @@ export function Board({ stages, applications, onOpen }: Props) {
             index={index}
             applications={(columns[stage.id] ?? []).flatMap((id) => byId.get(id) ?? [])}
             onOpen={onOpen}
+            onAdd={onAdd}
           />
         ))}
       </div>

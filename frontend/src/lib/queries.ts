@@ -2,11 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '../components/toast/useToast'
 import { api, ApiError } from './api'
 import { moveApplication } from './board'
-import type { Application, Stage } from './types'
+import type { Application, ApplicationInput, Company, Stage } from './types'
 
 export const queryKeys = {
   stages: ['stages'] as const,
   applications: ['applications'] as const,
+  companies: ['companies'] as const,
 }
 
 export const useStages = () =>
@@ -113,5 +114,64 @@ export function useReorderStages() {
       showToast(`Couldn't save the new stage order, so it went back. ${reason}`)
     },
     onSettled: () => invalidateStages(queryClient),
+  })
+}
+
+// --- companies and applications ---------------------------------------------
+
+export const useCompanies = () =>
+  useQuery({ queryKey: queryKeys.companies, queryFn: () => api<Company[]>('/api/companies/') })
+
+/** Cards embed their company, so company changes must refresh the board as well. */
+const invalidateCompanyData = (queryClient: ReturnType<typeof useQueryClient>) =>
+  Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.companies }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.applications }),
+  ])
+
+type CompanyInput = Pick<Company, 'name' | 'website' | 'notes'>
+
+export function useUpdateCompany() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...body }: Partial<CompanyInput> & { id: number }) =>
+      api<Company>(`/api/companies/${id}/`, { method: 'PATCH', body }),
+    onSuccess: () => invalidateCompanyData(queryClient),
+  })
+}
+
+/** Rejected with `company_in_use` (409) while the company still has applications. */
+export function useDeleteCompany() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api(`/api/companies/${id}/`, { method: 'DELETE' }),
+    onSuccess: () => invalidateCompanyData(queryClient),
+  })
+}
+
+export function useCreateApplication() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: ApplicationInput) =>
+      api<Application>('/api/applications/', { method: 'POST', body }),
+    // `company_name` may have created a company, so refresh both lists.
+    onSuccess: () => invalidateCompanyData(queryClient),
+  })
+}
+
+export function useUpdateApplication() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...body }: Partial<Omit<ApplicationInput, 'stage'>> & { id: number }) =>
+      api<Application>(`/api/applications/${id}/`, { method: 'PATCH', body }),
+    onSuccess: () => invalidateCompanyData(queryClient),
+  })
+}
+
+export function useDeleteApplication() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api(`/api/applications/${id}/`, { method: 'DELETE' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.applications }),
   })
 }

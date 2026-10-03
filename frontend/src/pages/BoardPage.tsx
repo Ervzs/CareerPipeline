@@ -1,14 +1,22 @@
 import { useState } from 'react'
+import { ApplicationFormDialog } from '../components/applications/ApplicationFormDialog'
 import { Board } from '../components/board/Board'
+import { CompaniesDialog } from '../components/companies/CompaniesDialog'
 import { StageSettingsPanel } from '../components/settings/StageSettingsPanel'
 import { Spinner } from '../components/Spinner'
-import { btnSecondary } from '../components/styles'
+import { btnPrimary, btnSecondary } from '../components/styles'
 import { useApplications, useStages } from '../lib/queries'
 
+/** Which dialog is open on the board, if any. */
+type DialogState =
+  null | { kind: 'add'; stageId?: number } | { kind: 'companies' } | { kind: 'settings' }
+
 export default function BoardPage() {
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [dialog, setDialog] = useState<DialogState>(null)
   const stages = useStages()
   const applications = useApplications()
+
+  const close = () => setDialog(null)
 
   if (stages.isPending || applications.isPending) return <Spinner label="Loading your pipeline" />
 
@@ -44,12 +52,40 @@ export default function BoardPage() {
             </p>
           )}
         </div>
-        <button type="button" className={btnSecondary} onClick={() => setSettingsOpen(true)}>
-          Pipeline settings
-        </button>
+        <div className="flex flex-wrap justify-end gap-2">
+          <button type="button" className={btnPrimary} onClick={() => setDialog({ kind: 'add' })}>
+            Add application
+          </button>
+          <button
+            type="button"
+            className={btnSecondary}
+            onClick={() => setDialog({ kind: 'companies' })}
+          >
+            Companies
+          </button>
+          <button
+            type="button"
+            className={btnSecondary}
+            onClick={() => setDialog({ kind: 'settings' })}
+          >
+            Pipeline settings
+          </button>
+        </div>
       </div>
-      <Board stages={stages.data} applications={applications.data} />
-      {settingsOpen && <StageSettingsPanel onClose={() => setSettingsOpen(false)} />}
+      <Board
+        stages={stages.data}
+        applications={applications.data}
+        onAdd={(stageId) => setDialog({ kind: 'add', stageId })}
+      />
+      {dialog?.kind === 'add' && (
+        <ApplicationFormDialog
+          stages={stages.data}
+          defaultStageId={dialog.stageId}
+          onClose={close}
+        />
+      )}
+      {dialog?.kind === 'companies' && <CompaniesDialog onClose={close} />}
+      {dialog?.kind === 'settings' && <StageSettingsPanel onClose={close} />}
     </main>
   )
 }

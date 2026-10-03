@@ -1,5 +1,10 @@
 import { useId } from 'react'
-import type { InputHTMLAttributes, ReactNode } from 'react'
+import type {
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from 'react'
 import { inputClass } from './styles'
 
 interface FieldProps {
@@ -62,5 +67,53 @@ export function FormError({ message }: { message?: string | null }) {
     <p role="alert" className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">
       {message}
     </p>
+  )
+}
+
+interface SelectFieldProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'className'> {
+  label: string
+  error?: string
+  children: ReactNode
+}
+
+export function SelectField({ label, error, children, ...select }: SelectFieldProps) {
+  return (
+    <Field label={label} error={error}>
+      {({ id, describedBy, invalid }) => (
+        <select
+          {...select}
+          id={id}
+          aria-describedby={describedBy}
+          aria-invalid={invalid || undefined}
+          className={`${inputClass} ${invalid ? 'border-danger' : ''}`}
+        >
+          {children}
+        </select>
+      )}
+    </Field>
+  )
+}
+
+interface TextAreaFieldProps extends Omit<
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
+  'className'
+> {
+  label: string
+  error?: string
+}
+
+export function TextAreaField({ label, error, ...textarea }: TextAreaFieldProps) {
+  return (
+    <Field label={label} error={error}>
+      {({ id, describedBy, invalid }) => (
+        <textarea
+          {...textarea}
+          id={id}
+          aria-describedby={describedBy}
+          aria-invalid={invalid || undefined}
+          className={`${inputClass} ${invalid ? 'border-danger' : ''}`}
+        />
+      )}
+    </Field>
   )
 }
