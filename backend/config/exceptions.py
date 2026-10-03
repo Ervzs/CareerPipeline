@@ -3,8 +3,15 @@
 {"error": {"code": "...", "message": "...", "details": {...}}}
 """
 
+from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
+from django.http import Http404
 from rest_framework import status
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import (
+    APIException,
+    NotFound,
+    PermissionDenied,
+    ValidationError,
+)
 from rest_framework.views import exception_handler
 
 
@@ -26,6 +33,13 @@ def _first_message(details):
 
 
 def api_exception_handler(exc, context):
+    # DRF converts Django's Http404/PermissionDenied internally; do the same here so we
+    # can read a proper `default_code` from them.
+    if isinstance(exc, Http404):
+        exc = NotFound()
+    elif isinstance(exc, DjangoPermissionDenied):
+        exc = PermissionDenied()
+
     response = exception_handler(exc, context)
     if response is None:
         return None
@@ -37,8 +51,8 @@ def api_exception_handler(exc, context):
         if not isinstance(details, dict):
             details = {"non_field_errors": details}
     else:
-        code = getattr(exc, "detail", None) and getattr(exc.detail, "code", None)
-        code = code or getattr(exc, "default_code", "error")
+        # ErrorDetail carries the specific code (e.g. "stage_not_empty"); else the class default.
+        code = getattr(getattr(exc, "detail", None), "code", None) or exc.default_code
         message = _first_message(response.data)
         details = {}
 
