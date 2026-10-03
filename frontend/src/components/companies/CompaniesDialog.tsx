@@ -3,7 +3,7 @@ import { formMessageOf } from '../../lib/errors'
 import { useApplications, useCompanies, useDeleteCompany } from '../../lib/queries'
 import { Dialog } from '../Dialog'
 import { FormError } from '../Field'
-import { btnGhost } from '../styles'
+import { btnDangerGhost, btnGhost } from '../styles'
 import { CompanyForm } from './CompanyForm'
 
 /** All companies, with edit and delete. A company with applications can't be deleted. */
@@ -74,7 +74,7 @@ export function CompaniesDialog({ onClose }: { onClose: () => void }) {
                   </button>
                   <button
                     type="button"
-                    className={`${btnGhost} text-danger hover:text-danger`}
+                    className={btnDangerGhost}
                     aria-label={`Delete ${company.name}`}
                     disabled={remove.isPending}
                     onClick={() => {

@@ -12,7 +12,7 @@ pytest · ruff (backend) — React · TypeScript · Vite · Tailwind · TanStack
 
 ```
 backend/    Django REST API (accounts = auth, pipeline = stages/companies/applications)
-frontend/   React app (added in Phase 2)
+frontend/   React + TypeScript single-page app (Vite, Tailwind, TanStack Query, dnd-kit)
 PLAN.md     Plan, decisions and progress
 ```
 
@@ -67,6 +67,39 @@ pytest                 # needs the CREATEDB privilege from step 1
 ruff check .
 ruff format --check .
 ```
+
+## Frontend — local setup
+
+Requirements: Node 20+ (developed on Node 24) and the backend running on port 8000.
+
+```powershell
+cd frontend
+npm install
+Copy-Item .env.example .env      # VITE_API_URL and the demo credentials
+npm run dev                      # http://localhost:5173
+```
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Dev server with hot reload |
+| `npm test` | Unit and component tests (Vitest + Testing Library) |
+| `npm run lint` | oxlint |
+| `npm run build` | Type-check and production build into `dist/` |
+| `npm run format` | Prettier |
+
+What the app does:
+
+- **Auth:** log in, register, or press **Try the demo**. The access token lives in memory only; on
+  every page load the app silently asks `/api/auth/refresh/` for a new one using the httpOnly cookie.
+- **Board:** one column per stage; drag cards between and within columns (mouse, touch with a short
+  press, or keyboard: Space to pick up, arrow keys to move, Space to drop). The board updates
+  immediately and rolls back with an error message if the server refuses the move.
+- **Pipeline settings:** add, rename, delete and reorder stages. Deleting a stage that still has
+  applications shows the server's explanation instead of deleting.
+- **Applications:** add (existing or new company), edit, delete. Click a card for a details pane
+  (beside the board on laptops, full screen on phones) with the description, listing link, date and
+  the company's notes.
+- **Companies:** edit notes and delete companies that have no applications.
 
 ## API overview
 

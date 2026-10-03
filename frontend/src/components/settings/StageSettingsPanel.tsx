@@ -29,7 +29,7 @@ import {
 import type { Stage } from '../../lib/types'
 import { Dialog } from '../Dialog'
 import { FormError, TextField } from '../Field'
-import { btnGhost, btnPrimary, btnSecondary, inputClass } from '../styles'
+import { btnDangerGhost, btnGhost, btnPrimary, btnSecondary, inputClass } from '../styles'
 
 /** Pull the most useful message out of any error from a stage request. */
 function describe(error: unknown): string {
@@ -119,7 +119,7 @@ function StageRow({ stage, onError }: { stage: Stage; onError: (message: string 
           </button>
           <button
             type="button"
-            className={`${btnGhost} text-danger hover:text-danger`}
+            className={btnDangerGhost}
             onClick={destroy}
             aria-label={`Delete ${stage.name}`}
             disabled={remove.isPending}

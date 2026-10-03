@@ -11,7 +11,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 export function AppShell() {
   const { user, logout } = useAuth()
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex h-dvh flex-col">
       <header className="border-b border-line bg-surface">
         <div className="flex items-center gap-4 px-4 py-2.5 sm:px-6">
           <span className="font-display text-lg font-bold">CareerPipeline</span>
@@ -30,7 +30,9 @@ export function AppShell() {
           </div>
         </div>
       </header>
-      <Outlet />
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <Outlet />
+      </div>
     </div>
   )
 }

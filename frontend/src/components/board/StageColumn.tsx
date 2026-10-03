@@ -22,7 +22,7 @@ export function StageColumn({ stage, index, applications, onOpen, onAdd, selecte
   return (
     <section
       aria-labelledby={headingId}
-      className="flex max-h-full w-72 shrink-0 snap-start flex-col rounded-lg bg-white/60"
+      className="flex max-h-full w-[82vw] max-w-72 shrink-0 sm:w-72 snap-start flex-col rounded-lg bg-white/60"
     >
       <div className="h-1 rounded-t-lg" style={{ background: stageColor(index) }} />
       <header className="flex items-baseline justify-between px-3 pt-3 pb-2">

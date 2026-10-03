@@ -47,7 +47,7 @@ export default function BoardPage() {
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-start justify-between gap-4 px-4 pt-5 pb-3 sm:px-6">
+      <div className="flex flex-col gap-3 px-4 pt-5 pb-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-6">
         <div>
           <h1 className="text-2xl font-bold">Your pipeline</h1>
           {applications.data.length === 0 && (
@@ -56,7 +56,7 @@ export default function BoardPage() {
             </p>
           )}
         </div>
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="flex flex-wrap gap-2 sm:justify-end">
           <button type="button" className={btnPrimary} onClick={() => setDialog({ kind: 'add' })}>
             Add application
           </button>

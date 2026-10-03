@@ -7,7 +7,7 @@ import { stageColor } from '../../lib/stageColors'
 import type { Application, Stage } from '../../lib/types'
 import { CompanyEditDialog } from '../companies/CompanyEditDialog'
 import { FormError } from '../Field'
-import { btnDanger, btnGhost, btnSecondary } from '../styles'
+import { btnDanger, btnDangerGhost, btnGhost, btnSecondary } from '../styles'
 import { useToast } from '../toast/useToast'
 import { ApplicationFormDialog } from './ApplicationFormDialog'
 
@@ -201,7 +201,7 @@ export function ApplicationDetailsPanel({ application, stages, onClose }: Props)
                 </button>
                 <button
                   type="button"
-                  className={`${btnGhost} text-danger hover:text-danger`}
+                  className={btnDangerGhost}
                   onClick={() => setConfirmingDelete(true)}
                 >
                   Delete
