@@ -31,3 +31,10 @@ Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 .DS_Store
+
+# --- Local-only files (not for repository visitors) ---
+DEPLOY.md
+PLAN.md
+docs/CareerPipeline-Build-Guide.docx
+docs/CareerPipeline-Build-Guide.pdf
+~$*

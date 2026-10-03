@@ -6,12 +6,9 @@ A job application tracker with a CRM-style Kanban board. Each column is a stage 
 (Wishlist, Applied, Interviewing, Offer, Rejected, or your own), and each card is an application.
 Drag cards between stages, keep notes on every company, and see where your search stands.
 
-**Live demo:** _add the Vercel URL here after deploying (steps in [DEPLOY.md](DEPLOY.md))_
-&nbsp;·&nbsp; **Demo login:** press **Try the demo** on the login page, no typing needed.
-Locally the demo account is `demo@careerpipeline.dev` / `DemoPipeline2026!` after `seed_demo`.
-
-> The free-tier backend sleeps when idle, so the first request after a quiet period can take up to a
-> minute. See [Cold starts](#free-tier-cold-starts).
+**Try it locally:** follow the setup below, run `python manage.py seed_demo`, then press **Try the
+demo** on the login page. The demo account (`demo@careerpipeline.dev` / `DemoPipeline2026!`) comes
+with a ready-made board.
 
 ![The board](docs/screenshots/board.png)
 
@@ -25,6 +22,21 @@ Locally the demo account is `demo@careerpipeline.dev` / `DemoPipeline2026!` afte
 On a phone the board scrolls sideways and the details cover the screen:
 
 <img src="docs/screenshots/board-mobile.png" alt="The board on a phone" width="260">
+
+## Highlights
+
+- **Full stack, end to end:** a PostgreSQL schema with migrations, a Django REST API, a React and
+  TypeScript app, automated tests and CI.
+- **Security-minded authentication:** a short-lived access token kept in memory, a rotating refresh
+  token in an httpOnly cookie, blacklisting on logout, and CORS with credentials.
+- **Multi-user data isolation:** every query is scoped to the signed-in user and every foreign key is
+  validated, with tests for each model.
+- **Data integrity:** transactions and row locks keep card order consistent, and stages or companies
+  that are in use cannot be deleted by accident.
+- **Polished interface:** optimistic drag and drop with rollback, loading, empty and error states,
+  keyboard and screen-reader support, and a layout that works from phone to laptop.
+- **Tested and checked:** 144 backend and 76 frontend tests, plus lint, formatting and type checks
+  on every push.
 
 ## What it does
 
@@ -45,15 +57,15 @@ On a phone the board scrolls sideways and the details cover the screen:
 
 ```mermaid
 flowchart LR
-    Browser["Browser<br/>React SPA (Vercel)"]
-    API["Django REST API<br/>gunicorn (Render)"]
-    DB[("PostgreSQL<br/>(Neon)")]
-    GHA["GitHub Actions<br/>CI + daily demo reset"]
+    Browser["Browser<br/>React SPA"]
+    API["Django REST API"]
+    DB[("PostgreSQL")]
+    GHA["GitHub Actions<br/>CI on every push"]
 
     Browser -- "JSON over HTTPS<br/>Bearer access token" --> API
     Browser -. "httpOnly refresh cookie<br/>(only sent to /api/auth/)" .-> API
     API -- "psycopg 3" --> DB
-    GHA -- "seed_demo" --> DB
+    GHA -. "lint, tests, build" .-> API
 ```
 
 The access token (5 minutes) lives only in JavaScript memory. The refresh token (7 days, rotated on
@@ -126,7 +138,6 @@ application and are deleted with it.
 | Database | PostgreSQL through psycopg 3 |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, TanStack Query, React Router, dnd-kit |
 | Quality | pytest + pytest-django, ruff, Vitest + Testing Library, oxlint, Prettier, GitHub Actions |
-| Hosting (free tiers) | Vercel (frontend), Render (API), Neon (database) |
 
 ## Quality
 
@@ -146,11 +157,10 @@ application and are deleted with it.
 ## Repository layout
 
 ```
-backend/    Django REST API (accounts = auth, pipeline = stages/companies/applications)
-frontend/   React + TypeScript single-page app
-docs/       Screenshots used in this README
-render.yaml Render Blueprint      DEPLOY.md  Manual deployment steps
-PLAN.md     Plan, decisions and progress
+backend/            Django REST API (accounts = auth, pipeline = stages/companies/applications)
+frontend/           React + TypeScript single-page app
+docs/screenshots/   Images used in this README
+.github/workflows/  CI: lint, tests and build on every push
 ```
 
 ## Backend — local setup (Windows / PowerShell)
@@ -278,11 +288,11 @@ return **409** with `stage_not_empty` or `company_in_use`.
 
 ### Cookie, CORS and token settings
 
-| Setting (env var) | Local development | Production (Vercel → Render, cross-site) |
+| Setting (env var) | Local development | Production (app and API on different sites) |
 |---|---|---|
 | `REFRESH_COOKIE_SAMESITE` | `Lax` | `None` |
 | `REFRESH_COOKIE_SECURE` | `False` | `True` (required with `SameSite=None`) |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | the exact Vercel origin(s) |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | the exact frontend origin(s) |
 | `CORS_ALLOW_CREDENTIALS` | always `True` | always `True` |
 
 The cookie is `HttpOnly`, scoped to `Path=/api/auth/`, and the refresh token rotates on every use
@@ -293,19 +303,8 @@ refresh request, but CORS stops it from reading the response, so it never obtain
 all other endpoints authenticate with the `Authorization` header, which browsers don't attach
 automatically.
 
-**Known limits** (also in [DEPLOY.md](DEPLOY.md)): browsers that block third-party cookies (Safari,
-Brave) won't keep the cross-site refresh cookie, so those users have to log in again after a reload
-unless the app and API share a domain or the API is proxied through Vercel. And because refresh
-tokens rotate, closing the tab at the exact moment a refresh is in flight can force a new login.
-
-## Free-tier cold starts
-
-The API runs on Render's free plan, which **sleeps after about 15 minutes without traffic**; the next
-request waits roughly 30–60 seconds while it wakes up. The app shows a loading state meanwhile.
-The Neon database also suspends when idle but resumes in under a second.
-
-## Deployment
-
-Everything needed is in the repo; the steps that need your accounts are in
-[DEPLOY.md](DEPLOY.md). CI runs on every push (`.github/workflows/ci.yml`) and a scheduled workflow
-resets the demo account daily (`.github/workflows/demo-reset.yml`).
+**Known limits:** browsers that block third-party cookies (Safari, Brave) won't keep a cross-site
+refresh cookie, so when the app and API are on different sites those users have to log in again
+after a reload; serving both from one domain, or proxying the API through the frontend host, avoids
+it. And because refresh tokens rotate, closing the tab at the exact moment a refresh is in flight
+can force a new login.

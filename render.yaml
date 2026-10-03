@@ -1,4 +1,4 @@
-# Render Blueprint for the Django API. See DEPLOY.md for the manual steps.
+# Render Blueprint for the Django API.
 # Variables marked `sync: false` are asked for in the Render dashboard on first deploy.
 services:
   - type: web
