@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import PipelineStage
+from .models import Company, PipelineStage
 
 
 class PipelineStageSerializer(serializers.ModelSerializer):
@@ -26,3 +26,10 @@ class PipelineStageSerializer(serializers.ModelSerializer):
 
 class StageReorderSerializer(serializers.Serializer):
     stage_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+
+
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ["id", "name", "website", "notes"]
+        read_only_fields = ["id"]

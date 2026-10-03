@@ -5,5 +5,6 @@ from . import views
 router = DefaultRouter(trailing_slash=True)
 router.include_root_view = False
 router.register("stages", views.PipelineStageViewSet, basename="stage")
+router.register("companies", views.CompanyViewSet, basename="company")
 
 urlpatterns = router.urls
