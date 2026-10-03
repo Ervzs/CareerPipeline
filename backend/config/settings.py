@@ -16,6 +16,7 @@ env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, []),
     CORS_ALLOWED_ORIGINS=(list, []),
+    CSRF_TRUSTED_ORIGINS=(list, []),
     REFRESH_COOKIE_SECURE=(bool, True),
     REFRESH_COOKIE_SAMESITE=(str, "None"),
 )
@@ -24,6 +25,9 @@ environ.Env.read_env(BASE_DIR / ".env")
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+# Render injects the service hostname, so it never has to be configured by hand.
+if render_host := env("RENDER_EXTERNAL_HOSTNAME", default=""):
+    ALLOWED_HOSTS = [*ALLOWED_HOSTS, render_host]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -44,6 +48,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Serves collected static files (admin, Swagger assets) straight from the app.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -76,6 +82,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 # DATABASE_URL (used by Neon/Render) wins; otherwise build from the DB_* parts.
 if env("DATABASE_URL", default=None):
     DATABASES = {"default": env.db("DATABASE_URL")}
+    # Reuse connections between requests and drop dead ones (Neon suspends idle databases).
+    DATABASES["default"]["CONN_MAX_AGE"] = 600
+    DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 else:
     DATABASES = {
         "default": {
@@ -107,6 +116,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
 
 # --- Django REST Framework --------------------------------------------------
 REST_FRAMEWORK = {
@@ -143,9 +156,36 @@ REFRESH_COOKIE_PATH = "/api/auth/"
 REFRESH_COOKIE_SECURE = env("REFRESH_COOKIE_SECURE")
 REFRESH_COOKIE_SAMESITE = env("REFRESH_COOKIE_SAMESITE")
 
-# --- CORS -------------------------------------------------------------------
+# --- CORS / CSRF ------------------------------------------------------------
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = True
+# Only the Django admin uses cookies/CSRF; the API authenticates with a Bearer header.
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+
+# --- Production hardening (DEBUG=False) ---------------------------------------
+if not DEBUG:
+    # Render terminates TLS at its proxy and forwards the original scheme in this header.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Start with an hour; raise it once HTTPS is confirmed working (see DEPLOY.md).
+    SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=3600)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# HSTS preload is a long-lived, hard-to-undo commitment for the whole domain, so it is
+# deliberately left off for a hobby deployment on a shared *.onrender.com hostname.
+SILENCED_SYSTEM_CHECKS = ["security.W021"]
+
+# --- Logging ----------------------------------------------------------------
+# Everything goes to stdout, which is where Render collects logs.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
+}
 
 # --- Demo account -----------------------------------------------------------
 DEMO_EMAIL = env("DEMO_EMAIL", default="demo@careerpipeline.dev")
