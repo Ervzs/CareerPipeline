@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '../components/toast/useToast'
 import { api, ApiError } from './api'
 import { moveApplication } from './board'
-import type { Application, ApplicationInput, Company, Stage } from './types'
+import type { Application, ApplicationInput, Company, Dashboard, Stage } from './types'
 
 export const queryKeys = {
   stages: ['stages'] as const,
@@ -175,3 +175,9 @@ export function useDeleteApplication() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.applications }),
   })
 }
+
+// --- dashboard ----------------------------------------------------------------
+
+/** Always refetched when the page opens (default staleTime), so it never shows old numbers for long. */
+export const useDashboard = () =>
+  useQuery({ queryKey: ['dashboard'], queryFn: () => api<Dashboard>('/api/dashboard/') })

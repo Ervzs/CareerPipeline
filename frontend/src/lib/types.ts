@@ -49,3 +49,17 @@ export interface ApiErrorBody {
     details: Record<string, string[] | string>
   }
 }
+
+export interface Dashboard {
+  totals: { applications: number; applied: number }
+  stages: { stage: number; name: string; order: number; count: number }[]
+  /** The last 12 weeks, oldest first; `week_start` is the Monday of that week. */
+  weeks: { week_start: string; count: number }[]
+  response_rate: {
+    baseline_stage: string | null
+    responded: number
+    applied: number
+    /** 0 to 1, or null when nothing has been applied to yet. */
+    rate: number | null
+  }
+}

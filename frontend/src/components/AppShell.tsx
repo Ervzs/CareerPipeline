@@ -19,6 +19,9 @@ export function AppShell() {
             <NavLink to="/" end className={navClass}>
               Board
             </NavLink>
+            <NavLink to="/dashboard" className={navClass}>
+              Dashboard
+            </NavLink>
           </nav>
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden max-w-[16rem] truncate text-sm text-ink-soft sm:inline">

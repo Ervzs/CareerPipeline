@@ -14,6 +14,11 @@ export function formatDate(value: string): string {
   })
 }
 
+/** "Jul 13": a compact label for chart axes. */
+export function formatShortDate(value: string): string {
+  return parseDate(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+
 /** "Applied today", "Applied 3 days ago", or the date once it is more than a month old. */
 export function appliedLabel(dateApplied: string | null, now = new Date()): string {
   if (!dateApplied) return 'Not applied yet'
