@@ -35,7 +35,7 @@ On a phone the board scrolls sideways and the details cover the screen:
   that are in use cannot be deleted by accident.
 - **Polished interface:** optimistic drag and drop with rollback, loading, empty and error states,
   keyboard and screen-reader support, and a layout that works from phone to laptop.
-- **Tested and checked:** 144 backend and 76 frontend tests, plus lint, formatting and type checks
+- **Tested and checked:** 145 backend and 76 frontend tests, plus lint, formatting and type checks
   on every push.
 
 ## What it does
@@ -141,7 +141,7 @@ application and are deleted with it.
 
 ## Quality
 
-- **Backend:** 144 pytest tests covering authentication (hashing, cookie flags, rotation, logout and
+- **Backend:** 145 pytest tests covering authentication (hashing, cookie flags, rotation, logout and
   blacklisting), default stages, **tenant isolation for every model** (user A can't read, change,
   delete or reference user B's data), card re-sequencing, stage reorder validation, blocked deletes,
   the dashboard numbers, activity notes, the seed command, and the production settings. `ruff check` and `ruff format --check` are clean.

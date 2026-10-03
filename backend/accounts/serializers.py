@@ -22,9 +22,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        # Run Django's configured password validators (length, common, numeric, similarity).
+        # Run Django's configured password validators (length, common, numeric).
         try:
-            validate_password(attrs["password"], user=User(email=attrs.get("email", "")))
+            validate_password(attrs["password"])
         except DjangoValidationError as exc:
             raise serializers.ValidationError({"password": list(exc.messages)}) from exc
         return attrs

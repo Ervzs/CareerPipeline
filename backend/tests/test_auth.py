@@ -40,6 +40,19 @@ def test_register_rejects_weak_passwords(api_client, password):
     assert not User.objects.filter(email="weak@example.com").exists()
 
 
+@pytest.mark.django_db
+def test_register_allows_a_password_that_resembles_the_email(api_client):
+    """There is deliberately no "too similar to your email" rule: with a long email almost
+    nothing would pass it."""
+    response = api_client.post(
+        "/api/auth/register/",
+        {"email": "maria.cruz@example.com", "password": "mariacruz2026"},
+        format="json",
+    )
+    assert response.status_code == 201
+    assert User.objects.get(email="maria.cruz@example.com").check_password("mariacruz2026")
+
+
 def test_register_rejects_duplicate_email_case_insensitively(api_client, user):
     response = api_client.post(
         "/api/auth/register/", {"email": "USER@example.com", "password": PASSWORD}, format="json"
