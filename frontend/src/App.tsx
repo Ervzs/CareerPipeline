@@ -1,8 +1,23 @@
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { ProtectedRoute, PublicOnlyRoute } from './auth/ProtectedRoute'
+import { AppShell } from './components/AppShell'
+import BoardPage from './pages/BoardPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+
 export default function App() {
   return (
-    <main className="mx-auto max-w-xl p-8">
-      <h1 className="text-3xl font-bold">CareerPipeline</h1>
-      <p className="mt-2 text-ink-soft">Track every application from wishlist to offer.</p>
-    </main>
+    <Routes>
+      <Route element={<PublicOnlyRoute />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppShell />}>
+          <Route index element={<BoardPage />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
