@@ -1,6 +1,9 @@
+from django.db import transaction
 from rest_framework import serializers
 
-from .models import Company, PipelineStage
+from . import services
+from .fields import OwnedPrimaryKeyRelatedField
+from .models import Company, JobApplication, PipelineStage
 
 
 class PipelineStageSerializer(serializers.ModelSerializer):
@@ -33,3 +36,76 @@ class CompanySerializer(serializers.ModelSerializer):
         model = Company
         fields = ["id", "name", "website", "notes"]
         read_only_fields = ["id"]
+
+
+class JobApplicationSerializer(serializers.ModelSerializer):
+    """A card on the board.
+
+    Writes: send `company` (existing id) OR `company_name` (finds or creates a company).
+    Reads: `company` is the id and `company_detail` the nested company, so the board
+    can render a card (and its details panel) from one request.
+    `stage` is chosen on create; afterwards cards change column only via the move endpoint.
+    """
+
+    company = OwnedPrimaryKeyRelatedField(queryset=Company.objects.all(), required=False)
+    company_name = serializers.CharField(write_only=True, required=False, max_length=200)
+    company_detail = CompanySerializer(source="company", read_only=True)
+    stage = OwnedPrimaryKeyRelatedField(queryset=PipelineStage.objects.all())
+
+    class Meta:
+        model = JobApplication
+        fields = [
+            "id",
+            "company",
+            "company_name",
+            "company_detail",
+            "stage",
+            "job_title",
+            "job_description",
+            "listing_url",
+            "date_applied",
+            "position",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "position", "created_at", "updated_at"]
+
+    def validate(self, attrs):
+        has_id = "company" in attrs
+        has_name = "company_name" in attrs
+        if has_id and has_name:
+            raise serializers.ValidationError(
+                {"company": ["Send either `company` or `company_name`, not both."]}
+            )
+        if self.instance is None and not (has_id or has_name):
+            raise serializers.ValidationError(
+                {"company": ["Send `company` (an id) or `company_name` (to create one)."]}
+            )
+        if self.instance is not None and "stage" in attrs and attrs["stage"] != self.instance.stage:
+            raise serializers.ValidationError(
+                {"stage": ["Use the move endpoint to change an application's stage."]}
+            )
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        user = self.context["request"].user
+        name = validated_data.pop("company_name", None)
+        if name is not None:
+            validated_data["company"] = services.get_or_create_company(user, name)
+        stage = validated_data.pop("stage")
+        return services.create_application(user, stage, **validated_data)
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        user = self.context["request"].user
+        validated_data.pop("stage", None)  # unchanged (validated above)
+        name = validated_data.pop("company_name", None)
+        if name is not None:
+            validated_data["company"] = services.get_or_create_company(user, name)
+        return super().update(instance, validated_data)
+
+
+class ApplicationMoveSerializer(serializers.Serializer):
+    stage = OwnedPrimaryKeyRelatedField(queryset=PipelineStage.objects.all())
+    position = serializers.IntegerField(min_value=0)

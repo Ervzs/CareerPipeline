@@ -7,8 +7,14 @@ from rest_framework.response import Response
 from config.exceptions import Conflict
 
 from . import services
-from .models import Company, PipelineStage
-from .serializers import CompanySerializer, PipelineStageSerializer, StageReorderSerializer
+from .models import Company, JobApplication, PipelineStage
+from .serializers import (
+    ApplicationMoveSerializer,
+    CompanySerializer,
+    JobApplicationSerializer,
+    PipelineStageSerializer,
+    StageReorderSerializer,
+)
 
 
 class PipelineStageViewSet(viewsets.ModelViewSet):
@@ -59,3 +65,33 @@ class CompanyViewSet(viewsets.ModelViewSet):
                 "This company still has applications. Delete or reassign them first.",
                 code="company_in_use",
             ) from exc
+
+
+class JobApplicationViewSet(viewsets.ModelViewSet):
+    """Kanban data: the list is ordered by column, then by position inside the column."""
+
+    serializer_class = JobApplicationSerializer
+
+    def get_queryset(self):
+        return (
+            JobApplication.objects.filter(user=self.request.user)
+            .select_related("company", "stage")
+            .order_by("stage__order", "position", "id")
+        )
+
+    def perform_destroy(self, instance):
+        stage_id = instance.stage_id
+        instance.delete()
+        services.resequence_column(stage_id)
+
+    @extend_schema(request=ApplicationMoveSerializer, responses=JobApplicationSerializer)
+    @action(detail=True, methods=["patch"])
+    def move(self, request, pk=None):
+        """Move a card to a stage and zero-based position; both columns are re-sequenced."""
+        application = self.get_object()
+        serializer = ApplicationMoveSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        services.move_application(
+            application, serializer.validated_data["stage"], serializer.validated_data["position"]
+        )
+        return Response(self.get_serializer(self.get_queryset().get(pk=application.pk)).data)
