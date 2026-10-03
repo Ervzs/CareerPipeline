@@ -56,3 +56,62 @@ export function useMoveApplication() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.applications }),
   })
 }
+
+// --- stages ---------------------------------------------------------------
+
+const invalidateStages = (queryClient: ReturnType<typeof useQueryClient>) =>
+  queryClient.invalidateQueries({ queryKey: queryKeys.stages })
+
+export function useCreateStage() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (name: string) => api<Stage>('/api/stages/', { method: 'POST', body: { name } }),
+    onSuccess: () => invalidateStages(queryClient),
+  })
+}
+
+export function useRenameStage() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, name }: { id: number; name: string }) =>
+      api<Stage>(`/api/stages/${id}/`, { method: 'PATCH', body: { name } }),
+    onSuccess: () => invalidateStages(queryClient),
+  })
+}
+
+/** Rejected with `stage_not_empty` (409) while the stage still holds applications. */
+export function useDeleteStage() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api(`/api/stages/${id}/`, { method: 'DELETE' }),
+    onSuccess: () => invalidateStages(queryClient),
+  })
+}
+
+/** Reorder stages: the list updates instantly and is restored if the server refuses. */
+export function useReorderStages() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: (stageIds: number[]) =>
+      api<Stage[]>('/api/stages/reorder/', { method: 'POST', body: { stage_ids: stageIds } }),
+    onMutate: async (stageIds) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.stages })
+      const previous = queryClient.getQueryData<Stage[]>(queryKeys.stages)
+      queryClient.setQueryData<Stage[]>(queryKeys.stages, (current) => {
+        const byId = new Map(current?.map((stage) => [stage.id, stage]))
+        return stageIds.flatMap((id, order) => {
+          const stage = byId.get(id)
+          return stage ? [{ ...stage, order }] : []
+        })
+      })
+      return { previous }
+    },
+    onError: (error, _ids, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKeys.stages, context.previous)
+      const reason = error instanceof ApiError ? error.message : 'The server could not be reached.'
+      showToast(`Couldn't save the new stage order, so it went back. ${reason}`)
+    },
+    onSettled: () => invalidateStages(queryClient),
+  })
+}
