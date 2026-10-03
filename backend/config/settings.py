@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
+    # Local apps
+    "accounts",
 ]
 
 MIDDLEWARE = [
@@ -85,6 +87,8 @@ else:
         }
     }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = "accounts.User"
 
 # --- Auth -------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
