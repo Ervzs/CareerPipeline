@@ -1,0 +1,66 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens. The pipeline is drawn like a rail line: each stage owns a line colour
+ * that tints its column header, so the board reads left to right as a route.
+ */
+@theme {
+  --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Figtree', ui-sans-serif, system-ui, sans-serif;
+
+  --color-mist: #f3f6f8;
+  --color-surface: #ffffff;
+  --color-ink: #14233b;
+  --color-ink-soft: #52627a;
+  --color-line: #dbe2ea;
+  --color-signal: #2563eb;
+  --color-signal-strong: #1d4ed8;
+  --color-danger: #b42318;
+  --color-danger-soft: #fde8e6;
+
+  /* One colour per default stage (see lib/stageColors.ts). */
+  --color-stage-0: #64748b;
+  --color-stage-1: #2563eb;
+  --color-stage-2: #7c3aed;
+  --color-stage-3: #15803d;
+  --color-stage-4: #be3455;
+}
+
+@layer base {
+  html {
+    background: var(--color-mist);
+    color: var(--color-ink);
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 2px;
+  }
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
