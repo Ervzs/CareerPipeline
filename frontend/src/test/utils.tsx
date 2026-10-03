@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { MemoryRouter } from 'react-router-dom'
+import { ToastProvider } from '../components/toast/ToastProvider'
 
 export const json = (status: number, body?: unknown) =>
   new Response(body === undefined ? null : JSON.stringify(body), { status })
@@ -12,7 +13,9 @@ export function renderWithProviders(ui: ReactElement, route = '/') {
     queryClient,
     ...render(
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>
+        <ToastProvider>
+          <MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>
+        </ToastProvider>
       </QueryClientProvider>,
     ),
   }

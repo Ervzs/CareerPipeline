@@ -1,6 +1,9 @@
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { columnDropId } from '../../lib/board'
 import { stageColor } from '../../lib/stageColors'
 import type { Application, Stage } from '../../lib/types'
-import { ApplicationCard } from './ApplicationCard'
+import { SortableApplicationCard } from './SortableApplicationCard'
 
 interface Props {
   stage: Stage
@@ -12,6 +15,8 @@ interface Props {
 /** One column. The coloured line on top is the stage's "rail line". */
 export function StageColumn({ stage, index, applications, onOpen }: Props) {
   const headingId = `stage-${stage.id}`
+  const { setNodeRef, isOver } = useDroppable({ id: columnDropId(stage.id) })
+
   return (
     <section
       aria-labelledby={headingId}
@@ -26,18 +31,27 @@ export function StageColumn({ stage, index, applications, onOpen }: Props) {
           {applications.length}
         </span>
       </header>
-      <ul className="flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-3">
-        {applications.map((application) => (
-          <li key={application.id}>
-            <ApplicationCard application={application} onOpen={onOpen} />
-          </li>
-        ))}
-        {applications.length === 0 && (
-          <li className="rounded-md border border-dashed border-line px-3 py-6 text-center text-sm text-ink-soft">
-            No applications here yet
-          </li>
-        )}
-      </ul>
+      <SortableContext items={applications.map((a) => a.id)} strategy={verticalListSortingStrategy}>
+        <ul
+          ref={setNodeRef}
+          className={`flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-3 transition-colors ${
+            isOver ? 'bg-signal/5' : ''
+          }`}
+        >
+          {applications.map((application) => (
+            <SortableApplicationCard
+              key={application.id}
+              application={application}
+              onOpen={onOpen}
+            />
+          ))}
+          {applications.length === 0 && (
+            <li className="rounded-md border border-dashed border-line px-3 py-6 text-center text-sm text-ink-soft">
+              No applications here yet
+            </li>
+          )}
+        </ul>
+      </SortableContext>
     </section>
   )
 }

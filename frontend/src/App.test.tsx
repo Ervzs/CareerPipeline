@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import App from './App'
 import { AuthProvider } from './auth/AuthContext'
+import { ToastProvider } from './components/toast/ToastProvider'
 import { setAccessToken } from './lib/api'
 
 const json = (status: number, body?: unknown) =>
@@ -16,11 +17,13 @@ const renderAt = (path: string) =>
     <QueryClientProvider
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
     >
-      <MemoryRouter initialEntries={[path]}>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </MemoryRouter>
+      <ToastProvider>
+        <MemoryRouter initialEntries={[path]}>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </MemoryRouter>
+      </ToastProvider>
     </QueryClientProvider>,
   )
 
