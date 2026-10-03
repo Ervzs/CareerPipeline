@@ -109,3 +109,37 @@ class JobApplicationSerializer(serializers.ModelSerializer):
 class ApplicationMoveSerializer(serializers.Serializer):
     stage = OwnedPrimaryKeyRelatedField(queryset=PipelineStage.objects.all())
     position = serializers.IntegerField(min_value=0)
+
+
+class StageCountSerializer(serializers.Serializer):
+    stage = serializers.IntegerField()
+    name = serializers.CharField()
+    order = serializers.IntegerField()
+    count = serializers.IntegerField()
+
+
+class WeekCountSerializer(serializers.Serializer):
+    week_start = serializers.DateField(help_text="The Monday that starts the week.")
+    count = serializers.IntegerField()
+
+
+class ResponseRateSerializer(serializers.Serializer):
+    baseline_stage = serializers.CharField(allow_null=True)
+    responded = serializers.IntegerField()
+    applied = serializers.IntegerField()
+    rate = serializers.FloatField(
+        allow_null=True,
+        help_text="responded / applied, from 0 to 1. Null when nothing has been applied to yet.",
+    )
+
+
+class DashboardTotalsSerializer(serializers.Serializer):
+    applications = serializers.IntegerField()
+    applied = serializers.IntegerField(help_text="Applications that have a date applied.")
+
+
+class DashboardSerializer(serializers.Serializer):
+    totals = DashboardTotalsSerializer()
+    stages = StageCountSerializer(many=True)
+    weeks = WeekCountSerializer(many=True)
+    response_rate = ResponseRateSerializer()

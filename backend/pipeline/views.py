@@ -3,14 +3,17 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from config.exceptions import Conflict
 
 from . import services
+from .dashboard import build_dashboard
 from .models import Company, JobApplication, PipelineStage
 from .serializers import (
     ApplicationMoveSerializer,
     CompanySerializer,
+    DashboardSerializer,
     JobApplicationSerializer,
     PipelineStageSerializer,
     StageReorderSerializer,
@@ -101,3 +104,11 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
             application, serializer.validated_data["stage"], serializer.validated_data["position"]
         )
         return Response(self.get_serializer(self.get_queryset().get(pk=application.pk)).data)
+
+
+class DashboardView(APIView):
+    """Pipeline numbers for the signed-in user, computed with database aggregations."""
+
+    @extend_schema(responses=DashboardSerializer)
+    def get(self, request):
+        return Response(DashboardSerializer(build_dashboard(request.user)).data)
