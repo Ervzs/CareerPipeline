@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     # Local apps
     "accounts",
+    "pipeline",
 ]
 
 MIDDLEWARE = [
