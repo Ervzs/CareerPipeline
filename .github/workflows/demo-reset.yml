@@ -1,10 +1,13 @@
 name: Reset demo account
 
-# Rebuilds the public demo account (sample companies and applications) so a visitor
-# who rearranged or deleted things finds a clean board again. Run it by hand from the
-# Actions tab ("Run workflow"); it needs the DATABASE_URL, SECRET_KEY, DEMO_EMAIL and
-# DEMO_PASSWORD repository secrets. Locally, `python manage.py seed_demo` does the same.
+# Rebuilds the public demo account (sample companies and applications) every day so a
+# visitor who rearranged or deleted things finds a clean board again. It can also be run
+# by hand from the Actions tab ("Run workflow"). It needs the DATABASE_URL, SECRET_KEY,
+# DEMO_EMAIL and DEMO_PASSWORD repository secrets. Locally, `python manage.py seed_demo`
+# does the same.
 on:
+  schedule:
+    - cron: "17 4 * * *" # 04:17 UTC daily
   workflow_dispatch:
 
 permissions:
