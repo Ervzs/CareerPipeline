@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from . import services
 from .fields import OwnedPrimaryKeyRelatedField
-from .models import Company, JobApplication, PipelineStage
+from .models import ApplicationActivity, Company, JobApplication, PipelineStage
 
 
 class PipelineStageSerializer(serializers.ModelSerializer):
@@ -143,3 +143,12 @@ class DashboardSerializer(serializers.Serializer):
     stages = StageCountSerializer(many=True)
     weeks = WeekCountSerializer(many=True)
     response_rate = ResponseRateSerializer()
+
+
+class ApplicationActivitySerializer(serializers.ModelSerializer):
+    """`application` and the owner are fixed by the URL and the session, never by the body."""
+
+    class Meta:
+        model = ApplicationActivity
+        fields = ["id", "application", "kind", "note", "occurred_at", "created_at"]
+        read_only_fields = ["id", "application", "created_at"]

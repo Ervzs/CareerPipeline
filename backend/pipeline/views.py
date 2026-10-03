@@ -1,6 +1,6 @@
 from django.db.models import ProtectedError
 from drf_spectacular.utils import extend_schema
-from rest_framework import viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,8 +9,9 @@ from config.exceptions import Conflict
 
 from . import services
 from .dashboard import build_dashboard
-from .models import Company, JobApplication, PipelineStage
+from .models import ApplicationActivity, Company, JobApplication, PipelineStage
 from .serializers import (
+    ApplicationActivitySerializer,
     ApplicationMoveSerializer,
     CompanySerializer,
     DashboardSerializer,
@@ -105,6 +106,24 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
         )
         return Response(self.get_serializer(self.get_queryset().get(pk=application.pk)).data)
 
+    @extend_schema(methods=["GET"], responses=ApplicationActivitySerializer(many=True))
+    @extend_schema(
+        methods=["POST"],
+        request=ApplicationActivitySerializer,
+        responses={201: ApplicationActivitySerializer},
+    )
+    @action(detail=True, methods=["get", "post"])
+    def activities(self, request, pk=None):
+        """List an application's activity notes (newest first) or add one."""
+        application = self.get_object()  # 404 unless the caller owns the application
+        if request.method == "POST":
+            serializer = ApplicationActivitySerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=request.user, application=application)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        notes = application.activities.all()
+        return Response(ApplicationActivitySerializer(notes, many=True).data)
+
 
 class DashboardView(APIView):
     """Pipeline numbers for the signed-in user, computed with database aggregations."""
@@ -112,3 +131,20 @@ class DashboardView(APIView):
     @extend_schema(responses=DashboardSerializer)
     def get(self, request):
         return Response(DashboardSerializer(build_dashboard(request.user)).data)
+
+
+class ApplicationActivityViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Edit or delete one note. Notes are listed and created under their application."""
+
+    serializer_class = ApplicationActivitySerializer
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return ApplicationActivity.objects.none()
+        # Scoped through the application, so another user's notes are simply not found.
+        return ApplicationActivity.objects.filter(application__user=self.request.user)

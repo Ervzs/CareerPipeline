@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 DEFAULT_STAGE_NAMES = ["Wishlist", "Applied", "Interviewing", "Offer", "Rejected"]
 
@@ -61,3 +62,36 @@ class JobApplication(models.Model):
 
     def __str__(self):
         return f"{self.job_title} @ {self.company}"
+
+
+class ApplicationActivity(models.Model):
+    """A dated note on an application: a call, an interview, a follow-up...
+
+    Notes only make sense next to their application, so they are deleted with it.
+    `user` is the multi-tenancy key like on every other record; it always equals the
+    application's owner.
+    """
+
+    class Kind(models.TextChoices):
+        CALL = "call", "Call"
+        INTERVIEW = "interview", "Interview"
+        FOLLOW_UP = "follow_up", "Follow-up"
+        OTHER = "other", "Other"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="activities"
+    )
+    application = models.ForeignKey(
+        JobApplication, on_delete=models.CASCADE, related_name="activities"
+    )
+    kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.OTHER)
+    note = models.TextField()
+    occurred_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-occurred_at", "-id"]
+        verbose_name_plural = "application activities"
+
+    def __str__(self):
+        return f"{self.get_kind_display()} on {self.application}"
