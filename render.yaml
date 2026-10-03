@@ -1,0 +1,37 @@
+# Render Blueprint for the Django API. See DEPLOY.md for the manual steps.
+# Variables marked `sync: false` are asked for in the Render dashboard on first deploy.
+services:
+  - type: web
+    name: careerpipeline-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: bash build.sh
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    healthCheckPath: /api/health/
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      # Neon connection string, e.g. postgresql://user:pass@ep-xxx.neon.tech/neondb?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # The Vercel URL of the frontend, e.g. https://careerpipeline.vercel.app (no trailing slash)
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      # The API's own public URL, e.g. https://careerpipeline-api.onrender.com (for the Django admin)
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      # Cross-site cookie: the frontend (Vercel) and API (Render) are different sites.
+      - key: REFRESH_COOKIE_SECURE
+        value: "True"
+      - key: REFRESH_COOKIE_SAMESITE
+        value: None
+      - key: DEMO_EMAIL
+        value: demo@careerpipeline.dev
+      - key: DEMO_PASSWORD
+        sync: false
