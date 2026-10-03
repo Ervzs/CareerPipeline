@@ -22,6 +22,10 @@ const full = makeApplication({
   },
 }) as never
 
+// Requests that change data (the panel also GETs the activity list when it opens).
+const changes = () =>
+  fetchMock.mock.calls.filter(([, init]) => init?.method && init.method !== 'GET')
+
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock)
   fetchMock.mockImplementation(async () => json(200, []))
@@ -78,12 +82,12 @@ test('delete asks for confirmation, then deletes and closes', async () => {
   )
 
   await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
-  expect(fetchMock).not.toHaveBeenCalled() // nothing is sent before confirming
+  expect(changes()).toHaveLength(0) // nothing is sent before confirming
   fetchMock.mockResolvedValueOnce(json(204))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete' }))
 
   await waitFor(() => expect(onClose).toHaveBeenCalled())
-  const [url, init] = fetchMock.mock.calls[0]
+  const [[url, init]] = changes()
   expect(init?.method).toBe('DELETE')
   expect(String(url)).toMatch(/\/api\/applications\/5\/$/)
 })
@@ -97,7 +101,7 @@ test('choosing "Keep it" cancels the delete', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Keep it' }))
 
   expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
-  expect(fetchMock).not.toHaveBeenCalled()
+  expect(changes()).toHaveLength(0)
 })
 
 test('Edit opens the form and Edit company opens the company form', async () => {

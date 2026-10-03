@@ -1,6 +1,6 @@
 /** Shared class strings, so buttons and inputs look the same everywhere. */
 const button =
-  'inline-flex items-center justify-center gap-2 min-h-9 rounded-md px-3.5 py-2 text-sm font-semibold transition-colors disabled:opacity-60'
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap min-h-9 rounded-md px-3.5 py-2 text-sm font-semibold transition-colors disabled:opacity-60'
 
 export const btnPrimary = `${button} bg-signal text-white hover:bg-signal-strong`
 export const btnSecondary = `${button} border border-line bg-surface text-ink hover:bg-mist`

@@ -3,7 +3,7 @@ import { useAuth } from '../auth/useAuth'
 import { btnGhost } from './styles'
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
-  `rounded-md px-3 py-1.5 text-sm font-medium ${
+  `rounded-md px-2.5 py-1.5 text-sm font-medium sm:px-3 ${
     isActive ? 'bg-ink text-white' : 'text-ink-soft hover:bg-mist hover:text-ink'
   }`
 
@@ -13,8 +13,8 @@ export function AppShell() {
   return (
     <div className="flex h-dvh flex-col">
       <header className="border-b border-line bg-surface">
-        <div className="flex items-center gap-4 px-4 py-2.5 sm:px-6">
-          <span className="font-display text-lg font-bold">CareerPipeline</span>
+        <div className="flex items-center gap-2 px-4 py-2.5 sm:gap-4 sm:px-6">
+          <span className="font-display text-base font-bold sm:text-lg">CareerPipeline</span>
           <nav aria-label="Main" className="flex gap-1">
             <NavLink to="/" end className={navClass}>
               Board

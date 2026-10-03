@@ -9,6 +9,7 @@ import { CompanyEditDialog } from '../companies/CompanyEditDialog'
 import { FormError } from '../Field'
 import { btnDanger, btnDangerGhost, btnGhost, btnSecondary } from '../styles'
 import { useToast } from '../toast/useToast'
+import { ActivityTimeline } from './ActivityTimeline'
 import { ApplicationFormDialog } from './ApplicationFormDialog'
 
 interface Props {
@@ -86,7 +87,7 @@ export function ApplicationDetailsPanel({ application, stages, onClose }: Props)
         onKeyDown={onKeyDown}
         className="fixed inset-0 z-30 flex flex-col overflow-y-auto bg-surface focus-visible:outline-none lg:static lg:z-auto lg:w-[26rem] lg:shrink-0 lg:border-l lg:border-line"
       >
-        <header className="flex items-start gap-3 border-b border-line px-5 py-4">
+        <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-line bg-surface px-5 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold leading-snug">{application.job_title}</h2>
             <p className="mt-0.5 text-ink-soft">{company.name}</p>
@@ -167,6 +168,10 @@ export function ApplicationDetailsPanel({ application, stages, onClose }: Props)
             >
               Edit company
             </button>
+          </Section>
+
+          <Section title="Activity">
+            <ActivityTimeline applicationId={application.id} />
           </Section>
 
           <div className="space-y-3 border-t border-line pt-4">

@@ -29,3 +29,27 @@ export function appliedLabel(dateApplied: string | null, now = new Date()): stri
   if (days <= 30) return `Applied ${days} days ago`
   return `Applied ${formatDate(dateApplied)}`
 }
+
+/** "Mar 4, 2026, 10:30 AM" in the viewer's locale and time zone. */
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
+
+const pad = (n: number) => String(n).padStart(2, '0')
+
+/** ISO timestamp -> value for <input type="datetime-local"> (local time, no seconds). */
+export function toDateTimeInput(iso: string): string {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/** <input type="datetime-local"> value (local time) -> ISO timestamp. */
+export function fromDateTimeInput(value: string): string {
+  return new Date(value).toISOString()
+}

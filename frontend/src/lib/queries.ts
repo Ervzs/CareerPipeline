@@ -2,7 +2,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '../components/toast/useToast'
 import { api, ApiError } from './api'
 import { moveApplication } from './board'
-import type { Application, ApplicationInput, Company, Dashboard, Stage } from './types'
+import type {
+  Activity,
+  ActivityInput,
+  Application,
+  ApplicationInput,
+  Company,
+  Dashboard,
+  Stage,
+} from './types'
 
 export const queryKeys = {
   stages: ['stages'] as const,
@@ -181,3 +189,39 @@ export function useDeleteApplication() {
 /** Always refetched when the page opens (default staleTime), so it never shows old numbers for long. */
 export const useDashboard = () =>
   useQuery({ queryKey: ['dashboard'], queryFn: () => api<Dashboard>('/api/dashboard/') })
+
+// --- activity notes ---------------------------------------------------------------
+
+const activitiesKey = (applicationId: number) => ['activities', applicationId] as const
+
+export const useActivities = (applicationId: number) =>
+  useQuery({
+    queryKey: activitiesKey(applicationId),
+    queryFn: () => api<Activity[]>(`/api/applications/${applicationId}/activities/`),
+  })
+
+export function useCreateActivity(applicationId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: ActivityInput) =>
+      api<Activity>(`/api/applications/${applicationId}/activities/`, { method: 'POST', body }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: activitiesKey(applicationId) }),
+  })
+}
+
+export function useUpdateActivity(applicationId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...body }: Partial<ActivityInput> & { id: number }) =>
+      api<Activity>(`/api/activities/${id}/`, { method: 'PATCH', body }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: activitiesKey(applicationId) }),
+  })
+}
+
+export function useDeleteActivity(applicationId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api(`/api/activities/${id}/`, { method: 'DELETE' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: activitiesKey(applicationId) }),
+  })
+}

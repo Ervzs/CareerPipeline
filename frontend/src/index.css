@@ -4,7 +4,8 @@
  * Design tokens. The pipeline is drawn like a rail line: each stage owns a line colour
  * that tints its column header, so the board reads left to right as a route.
  */
-@theme {
+/* `static` keeps every variable: the stage colours are picked by index at runtime. */
+@theme static {
   --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Bricolage Grotesque', 'Figtree', ui-sans-serif, system-ui, sans-serif;
 

@@ -63,3 +63,21 @@ export interface Dashboard {
     rate: number | null
   }
 }
+
+export type ActivityKind = 'call' | 'interview' | 'follow_up' | 'other'
+
+/** A dated note on an application: a call, an interview, a follow-up... */
+export interface Activity {
+  id: number
+  application: number
+  kind: ActivityKind
+  note: string
+  occurred_at: string
+  created_at: string
+}
+
+export interface ActivityInput {
+  kind: ActivityKind
+  note: string
+  occurred_at: string
+}

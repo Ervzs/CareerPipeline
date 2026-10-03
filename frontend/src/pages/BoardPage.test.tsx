@@ -9,9 +9,12 @@ const fetchMock = vi.fn<typeof fetch>()
 const stages = [makeStage(1, 'Wishlist', 0), makeStage(2, 'Applied', 1), makeStage(3, 'Offer', 2)]
 
 function serve(applications: unknown[]) {
-  fetchMock.mockImplementation(async (url) =>
-    String(url).endsWith('/api/stages/') ? json(200, stages) : json(200, applications),
-  )
+  fetchMock.mockImplementation(async (url) => {
+    const path = String(url)
+    if (path.endsWith('/api/stages/')) return json(200, stages)
+    if (path.includes('/activities/')) return json(200, [])
+    return json(200, applications)
+  })
 }
 
 beforeEach(() => vi.stubGlobal('fetch', fetchMock))

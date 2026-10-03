@@ -22,14 +22,15 @@ export function WeeklyBars({ weeks }: { weeks: Dashboard['weeks'] }) {
               className={`block w-full rounded-t bg-signal ${week.count === 0 ? 'h-px bg-line' : ''}`}
               style={week.count > 0 ? { height: `${(week.count / max) * 80}%` } : undefined}
             />
-            {/* Phones only have room for every other label. */}
-            <span
-              aria-hidden
-              className={`mt-1.5 truncate text-center text-[0.65rem] text-ink-soft sm:text-xs ${
-                index % 2 === 1 ? 'invisible sm:visible' : ''
-              }`}
-            >
-              {label}
+            {/* Every other week is labelled so each label has room; it centres over its bar. */}
+            <span aria-hidden className="mt-1.5 flex justify-center">
+              <span
+                className={`text-[0.65rem] whitespace-nowrap text-ink-soft sm:text-xs ${
+                  index % 2 === 1 ? 'invisible' : ''
+                }`}
+              >
+                {label}
+              </span>
             </span>
           </li>
         )
