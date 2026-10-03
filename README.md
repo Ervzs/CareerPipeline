@@ -18,7 +18,9 @@ Locally the demo account is `demo@careerpipeline.dev` / `DemoPipeline2026!` afte
 |  |  |
 |---|---|
 | ![Application details](docs/screenshots/details.png) | ![Pipeline settings](docs/screenshots/settings.png) |
-| Details pane beside the board, with the company's notes | Add, rename, delete and reorder stages |
+| Details pane beside the board, with company notes and the activity timeline | Add, rename, delete and reorder stages |
+
+![The dashboard](docs/screenshots/dashboard.png)
 
 On a phone the board scrolls sideways and the details cover the screen:
 
@@ -33,6 +35,10 @@ On a phone the board scrolls sideways and the details cover the screen:
 - **Applications and companies:** create an application for an existing company or a new one in the
   same step; edit and delete both. A company with applications can't be deleted.
 - **Details pane:** description, listing link, date applied and the company's notes.
+- **Activity timeline:** log calls, interviews and follow-ups on each application, with the time
+  they happened; edit or delete them later.
+- **Dashboard:** applications per stage, applications per week (last 12 weeks) and a response rate,
+  all computed in the database.
 - **Accounts:** register, log in, or try the demo. Every user only ever sees their own data.
 
 ## Architecture
@@ -63,6 +69,8 @@ erDiagram
     USER ||--o{ JOB_APPLICATION : owns
     PIPELINE_STAGE ||--o{ JOB_APPLICATION : "column of"
     COMPANY ||--o{ JOB_APPLICATION : "applied to"
+    JOB_APPLICATION ||--o{ APPLICATION_ACTIVITY : "has notes"
+    USER ||--o{ APPLICATION_ACTIVITY : owns
 
     USER {
         int id PK
@@ -95,10 +103,20 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
+    APPLICATION_ACTIVITY {
+        int id PK
+        int user_id FK
+        int application_id FK
+        string kind "call, interview, follow_up, other"
+        text note
+        datetime occurred_at
+        datetime created_at
+    }
 ```
 
 Every row carries `user_id`, the multi-tenancy key. `stage` and `company` use `ON DELETE PROTECT`,
-which is what blocks deleting something that is still in use.
+which is what blocks deleting something that is still in use. Activity notes belong to their
+application and are deleted with it.
 
 ## Tech stack
 
@@ -112,16 +130,18 @@ which is what blocks deleting something that is still in use.
 
 ## Quality
 
-- **Backend:** 110 pytest tests covering authentication (hashing, cookie flags, rotation, logout and
+- **Backend:** 144 pytest tests covering authentication (hashing, cookie flags, rotation, logout and
   blacklisting), default stages, **tenant isolation for every model** (user A can't read, change,
   delete or reference user B's data), card re-sequencing, stage reorder validation, blocked deletes,
-  the seed command, and the production settings. `ruff check` and `ruff format --check` are clean.
-- **Frontend:** 58 Vitest tests covering the API client (token refresh, single-flight retry), auth
-  flow, route protection, the board, optimistic move with rollback, and every dialog.
+  the dashboard numbers, activity notes, the seed command, and the production settings. `ruff check` and `ruff format --check` are clean.
+- **Frontend:** 76 Vitest tests covering the API client (token refresh, single-flight retry), auth
+  flow, route protection, the board, optimistic move with rollback, every dialog, the dashboard and
+  the activity timeline.
 - **CI** runs all of it on every push: backend on Python 3.13 and 3.14 against a real PostgreSQL,
   frontend on Node 24.
-- The drag gesture and the responsive layout were also exercised in a real browser (Edge) against a
-  running backend.
+- The drag gesture, the dashboard, the activity timeline and the responsive layout were also
+  exercised in a real browser (Edge) against a running backend. That run caught a real bug (a
+  Tailwind 4 build detail that dropped the fifth stage colour), which now has a regression test.
 
 ## Repository layout
 
@@ -219,6 +239,9 @@ Enter opens the card's details. On touch screens, press and hold a card briefly 
 | CRUD | `/api/companies/` | Companies |
 | CRUD | `/api/applications/` | Applications; the list comes back in board order (column, then position) |
 | PATCH | `/api/applications/{id}/move/` | `{"stage": id, "position": n}` — moves a card and re-sequences both columns |
+| GET | `/api/dashboard/` | Per-stage counts, applications per week (12 weeks) and the response rate |
+| GET, POST | `/api/applications/{id}/activities/` | List an application's activity notes (newest first) or add one |
+| GET, PATCH, PUT, DELETE | `/api/activities/{id}/` | Read, edit or delete one note |
 | GET | `/api/health/` | Liveness probe (no authentication, no database access) |
 
 Every request except register/login/refresh/logout/health needs `Authorization: Bearer <access>`.
@@ -246,6 +269,10 @@ return **409** with `stage_not_empty` or `company_in_use`.
   which is what makes the optimistic update safe to roll back.
 - **No pagination** — one person's board is small and the Kanban needs all of it at once.
 - **Refresh token in an httpOnly cookie** — JavaScript only ever holds the 5-minute access token.
+- **Dashboard numbers come from SQL aggregations** (`Count`, `TruncWeek`, filtered counts), in three
+  queries however many applications there are. Response rate = applications with a date applied that
+  now sit in a column after "Applied", divided by all applications with a date applied; it is `null`,
+  never a division by zero, when nothing has been applied to yet.
 - **One error shape** — the API and the UI agree on `{error: {code, message, details}}`, so forms can
   show field errors and the UI can react to specific codes.
 
