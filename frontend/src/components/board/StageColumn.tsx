@@ -11,10 +11,11 @@ interface Props {
   applications: Application[]
   onOpen?: (application: Application) => void
   onAdd?: (stageId: number) => void
+  selectedId?: number | null
 }
 
 /** One column. The coloured line on top is the stage's "rail line". */
-export function StageColumn({ stage, index, applications, onOpen, onAdd }: Props) {
+export function StageColumn({ stage, index, applications, onOpen, onAdd, selectedId }: Props) {
   const headingId = `stage-${stage.id}`
   const { setNodeRef, isOver } = useDroppable({ id: columnDropId(stage.id) })
 
@@ -59,6 +60,7 @@ export function StageColumn({ stage, index, applications, onOpen, onAdd }: Props
               key={application.id}
               application={application}
               onOpen={onOpen}
+              selected={application.id === selectedId}
             />
           ))}
           {applications.length === 0 && (

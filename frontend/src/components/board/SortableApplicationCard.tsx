@@ -6,9 +6,10 @@ import { ApplicationCard } from './ApplicationCard'
 interface Props {
   application: Application
   onOpen?: (application: Application) => void
+  selected?: boolean
 }
 
-export function SortableApplicationCard({ application, onOpen }: Props) {
+export function SortableApplicationCard({ application, onOpen, selected }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: application.id,
   })
@@ -22,7 +23,13 @@ export function SortableApplicationCard({ application, onOpen }: Props) {
         opacity: isDragging ? 0.35 : 1,
       }}
     >
-      <ApplicationCard application={application} onOpen={onOpen} {...attributes} {...listeners} />
+      <ApplicationCard
+        application={application}
+        onOpen={onOpen}
+        selected={selected}
+        {...attributes}
+        {...listeners}
+      />
     </li>
   )
 }

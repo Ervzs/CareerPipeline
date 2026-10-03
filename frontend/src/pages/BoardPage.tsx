@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ApplicationDetailsPanel } from '../components/applications/ApplicationDetailsPanel'
 import { ApplicationFormDialog } from '../components/applications/ApplicationFormDialog'
 import { Board } from '../components/board/Board'
 import { CompaniesDialog } from '../components/companies/CompaniesDialog'
@@ -13,10 +14,13 @@ type DialogState =
 
 export default function BoardPage() {
   const [dialog, setDialog] = useState<DialogState>(null)
+  const [selectedId, setSelectedId] = useState<number | null>(null)
   const stages = useStages()
   const applications = useApplications()
 
   const close = () => setDialog(null)
+  // Look the card up on every render so the panel always shows fresh data (or closes if it is gone).
+  const selected = applications.data?.find((a) => a.id === selectedId)
 
   if (stages.isPending || applications.isPending) return <Spinner label="Loading your pipeline" />
 
@@ -72,11 +76,24 @@ export default function BoardPage() {
           </button>
         </div>
       </div>
-      <Board
-        stages={stages.data}
-        applications={applications.data}
-        onAdd={(stageId) => setDialog({ kind: 'add', stageId })}
-      />
+      <div className="flex min-h-0 min-w-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Board
+            stages={stages.data}
+            applications={applications.data}
+            selectedId={selectedId}
+            onOpen={(application) => setSelectedId(application.id)}
+            onAdd={(stageId) => setDialog({ kind: 'add', stageId })}
+          />
+        </div>
+        {selected && (
+          <ApplicationDetailsPanel
+            application={selected}
+            stages={stages.data}
+            onClose={() => setSelectedId(null)}
+          />
+        )}
+      </div>
       {dialog?.kind === 'add' && (
         <ApplicationFormDialog
           stages={stages.data}

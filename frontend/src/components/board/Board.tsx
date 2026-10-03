@@ -33,9 +33,10 @@ interface Props {
   applications: Application[]
   onOpen?: (application: Application) => void
   onAdd?: (stageId: number) => void
+  selectedId?: number | null
 }
 
-export function Board({ stages, applications, onOpen, onAdd }: Props) {
+export function Board({ stages, applications, onOpen, onAdd, selectedId }: Props) {
   const move = useMoveApplication()
 
   const byId = useMemo(() => new Map(applications.map((a) => [a.id, a])), [applications])
@@ -136,6 +137,7 @@ export function Board({ stages, applications, onOpen, onAdd }: Props) {
             applications={(columns[stage.id] ?? []).flatMap((id) => byId.get(id) ?? [])}
             onOpen={onOpen}
             onAdd={onAdd}
+            selectedId={selectedId}
           />
         ))}
       </div>

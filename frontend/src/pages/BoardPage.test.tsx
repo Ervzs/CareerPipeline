@@ -67,3 +67,27 @@ test('a failed load shows an error and can be retried', async () => {
 
   expect(await screen.findByRole('region', { name: 'Wishlist' })).toBeInTheDocument()
 })
+
+test('clicking a card opens its details beside the board, and closing hides them', async () => {
+  serve([
+    makeApplication({
+      id: 1,
+      stage: 2,
+      job_title: 'Backend Engineer',
+      job_description: 'Build APIs.',
+    }),
+  ])
+  renderWithProviders(<BoardPage />)
+
+  await userEvent.click(await screen.findByRole('button', { name: /Backend Engineer/ }))
+
+  const panel = screen.getByRole('complementary', { name: 'Application details' })
+  expect(within(panel).getByText('Build APIs.')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /Backend Engineer/ })).toHaveAttribute(
+    'aria-current',
+    'true',
+  )
+
+  await userEvent.click(within(panel).getByRole('button', { name: 'Close details' }))
+  expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
+})
