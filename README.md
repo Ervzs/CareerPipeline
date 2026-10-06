@@ -29,9 +29,7 @@ Saved jobs go to the **Applied** column, dated today. The same job is never adde
 1. Download this repository (**Code → Download ZIP**) and unzip it.
 2. Open `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode**.
 3. Click **Load unpacked** and choose the `extension` folder.
-4. Click the CareerPipeline icon and sign in with:
-   - API URL: `https://careerpipeline-api.onrender.com`
-   - your CareerPipeline email and password
+4. Click the CareerPipeline icon and sign in with your CareerPipeline email and password.
 
 ## How to use the website
 

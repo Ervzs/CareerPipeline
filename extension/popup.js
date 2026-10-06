@@ -20,7 +20,7 @@ async function render() {
     await fillFromTab()
   } else {
     const { apiUrl } = await chrome.storage.local.get('apiUrl')
-    signIn.elements.apiUrl.value = apiUrl ?? 'http://localhost:8000'
+    signIn.elements.apiUrl.value = apiUrl ?? 'https://careerpipeline-api.onrender.com'
   }
 }
 
