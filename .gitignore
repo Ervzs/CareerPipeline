@@ -38,3 +38,6 @@ PLAN.md
 docs/CareerPipeline-Build-Guide.docx
 docs/CareerPipeline-Build-Guide.pdf
 ~$*
+
+# --- Personal tutorial docs (kept local, not pushed) ---
+docs/*.md
