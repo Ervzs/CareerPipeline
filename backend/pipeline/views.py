@@ -12,6 +12,7 @@ from .dashboard import build_dashboard
 from .models import ApplicationActivity, Company, JobApplication, PipelineStage
 from .serializers import (
     ApplicationActivitySerializer,
+    ApplicationCaptureSerializer,
     ApplicationMoveSerializer,
     CompanySerializer,
     DashboardSerializer,
@@ -105,6 +106,24 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
             application, serializer.validated_data["stage"], serializer.validated_data["position"]
         )
         return Response(self.get_serializer(self.get_queryset().get(pk=application.pk)).data)
+
+    @extend_schema(
+        request=ApplicationCaptureSerializer,
+        responses={200: JobApplicationSerializer, 201: JobApplicationSerializer},
+    )
+    @action(detail=False, methods=["post"])
+    def capture(self, request):
+        """Save a job from the browser extension (201). An already saved listing URL returns
+        the existing card (200)."""
+        serializer = ApplicationCaptureSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        application, created = services.capture_application(
+            request.user, **serializer.validated_data
+        )
+        return Response(
+            self.get_serializer(application).data,
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
 
     @extend_schema(methods=["GET"], responses=ApplicationActivitySerializer(many=True))
     @extend_schema(

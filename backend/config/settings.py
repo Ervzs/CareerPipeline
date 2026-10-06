@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     # Third party
     "corsheaders",
     "rest_framework",
+    "rest_framework.authtoken",
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     # Local apps
@@ -124,6 +125,8 @@ STORAGES = {
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        # Long-lived, revocable key used by the browser extension ("Authorization: Token <key>").
+        "rest_framework.authentication.TokenAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",

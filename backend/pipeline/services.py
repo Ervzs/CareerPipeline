@@ -67,6 +67,31 @@ def create_application(user, stage, **fields):
     return JobApplication.objects.create(user=user, stage=stage, position=position, **fields)
 
 
+def capture_application(user, listing_url, job_title, company_name="", date_applied=None):
+    """Save a job sent by the browser extension. Returns (application, created).
+
+    The same listing URL is never saved twice. New cards go to the "Applied" stage, or the
+    first stage when the user has renamed or deleted it.
+    """
+    existing = JobApplication.objects.filter(user=user, listing_url=listing_url).first()
+    if existing:
+        return existing, False
+    stages = PipelineStage.objects.filter(user=user)
+    stage = stages.filter(name__iexact="Applied").first() or stages.first()
+    if stage is None:
+        raise ValidationError({"stage": ["Add a stage to your board first."]})
+    company = get_or_create_company(user, company_name) if company_name else None
+    application = create_application(
+        user,
+        stage,
+        company=company,
+        job_title=job_title,
+        listing_url=listing_url,
+        date_applied=date_applied or timezone.localdate(),
+    )
+    return application, True
+
+
 def resequence_column(stage_id):
     """Make positions in one column contiguous (0..n-1), keeping the current order."""
     cards = list(JobApplication.objects.filter(stage_id=stage_id).order_by("position", "id"))

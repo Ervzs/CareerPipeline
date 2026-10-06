@@ -128,3 +128,21 @@ def test_me_returns_current_user(api_client, user):
     response = api_client.get("/api/auth/me/")
     assert response.status_code == 200
     assert response.json() == {"id": user.id, "email": "user@example.com"}
+
+
+# --- browser extension token ------------------------------------------------
+def test_extension_token_is_issued_for_valid_credentials_and_revocable(api_client, user):
+    url = "/api/auth/extension-token/"
+    wrong = api_client.post(url, {"email": user.email, "password": "nope"}, format="json")
+    assert wrong.status_code == 401
+
+    response = api_client.post(url, {"email": user.email, "password": PASSWORD}, format="json")
+    assert response.status_code == 200
+    key = response.json()["token"]
+    again = api_client.post(url, {"email": user.email, "password": PASSWORD}, format="json")
+    assert again.json()["token"] == key
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {key}")
+    assert api_client.get("/api/auth/me/").status_code == 200
+    assert api_client.delete(url).status_code == 204
+    assert api_client.get("/api/auth/me/").status_code == 401

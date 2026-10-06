@@ -108,6 +108,15 @@ class JobApplicationSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class ApplicationCaptureSerializer(serializers.Serializer):
+    """A job sent by the browser extension. `date_applied` defaults to today."""
+
+    listing_url = serializers.URLField(max_length=500)
+    job_title = serializers.CharField(max_length=200)
+    company_name = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    date_applied = serializers.DateField(required=False)
+
+
 class ApplicationMoveSerializer(serializers.Serializer):
     stage = OwnedPrimaryKeyRelatedField(queryset=PipelineStage.objects.all())
     position = serializers.IntegerField(min_value=0)

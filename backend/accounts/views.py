@@ -1,7 +1,9 @@
+from django.contrib.auth import authenticate
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
+from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
@@ -10,7 +12,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .cookies import clear_refresh_cookie, get_refresh_cookie, set_refresh_cookie
-from .serializers import AccessTokenSerializer, RegisterSerializer, UserSerializer
+from .serializers import (
+    AccessTokenSerializer,
+    ExtensionLoginSerializer,
+    ExtensionTokenSerializer,
+    RegisterSerializer,
+    UserSerializer,
+)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -83,3 +91,27 @@ class MeView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class ExtensionTokenView(APIView):
+    """POST: email + password -> the user's browser-extension key. DELETE: revoke it."""
+
+    def get_permissions(self):
+        return [AllowAny()] if self.request.method == "POST" else [IsAuthenticated()]
+
+    @extend_schema(request=ExtensionLoginSerializer, responses=ExtensionTokenSerializer)
+    def post(self, request):
+        serializer = ExtensionLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = authenticate(request, **serializer.validated_data)
+        if user is None:
+            raise AuthenticationFailed(
+                "No account found with this email and password.", code="invalid_credentials"
+            )
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({"token": token.key})
+
+    @extend_schema(request=None, responses={204: None})
+    def delete(self, request):
+        Token.objects.filter(user=request.user).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

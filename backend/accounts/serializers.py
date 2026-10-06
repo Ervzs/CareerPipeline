@@ -40,6 +40,15 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class ExtensionLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(style={"input_type": "password"})
+
+
+class ExtensionTokenSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
+
 class AccessTokenSerializer(serializers.Serializer):
     """Documents the login/refresh response body (the refresh token is in the cookie)."""
 
