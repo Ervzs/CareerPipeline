@@ -159,6 +159,7 @@ application and are deleted with it.
 ```
 backend/            Django REST API (accounts = auth, pipeline = stages/companies/applications)
 frontend/           React + TypeScript single-page app
+extension/          Chrome/Edge/Brave extension that saves jobs you apply to
 docs/screenshots/   Images used in this README
 .github/workflows/  CI: lint, tests and build on every push
 ```
@@ -244,25 +245,47 @@ Enter opens the card's details. On touch screens, press and hold a card briefly 
 | POST | `/api/auth/refresh/` | Reads the cookie, rotates it, returns a new `{access}` |
 | POST | `/api/auth/logout/` | Blacklists the refresh token and clears the cookie |
 | GET | `/api/auth/me/` | Current user |
+| POST, DELETE | `/api/auth/extension-token/` | Email + password → a long-lived key for the browser extension; DELETE revokes it |
 | CRUD | `/api/stages/` | Pipeline stages (new stages are appended at the end) |
 | POST | `/api/stages/reorder/` | `{"stage_ids": [...]}` — the complete list of your stage ids in the new order |
 | CRUD | `/api/companies/` | Companies |
 | CRUD | `/api/applications/` | Applications; the list comes back in board order (column, then position) |
+| POST | `/api/applications/capture/` | Used by the extension: `{listing_url, job_title, company_name?}` → saved to "Applied", dated today; a listing URL you already saved returns that card (200) |
 | PATCH | `/api/applications/{id}/move/` | `{"stage": id, "position": n}` — moves a card and re-sequences both columns |
 | GET | `/api/dashboard/` | Per-stage counts, applications per week (12 weeks) and the response rate |
 | GET, POST | `/api/applications/{id}/activities/` | List an application's activity notes (newest first) or add one |
 | GET, PATCH, PUT, DELETE | `/api/activities/{id}/` | Read, edit or delete one note |
 | GET | `/api/health/` | Liveness probe (no authentication, no database access) |
 
-Every request except register/login/refresh/logout/health needs `Authorization: Bearer <access>`.
+Every request except register/login/refresh/logout/health needs `Authorization: Bearer <access>`
+(or `Authorization: Token <key>` from the browser extension).
 
 **Errors** always look like `{"error": {"code": "...", "message": "...", "details": {...}}}`.
 Validation problems use `validation_error` (field messages in `details`); blocked deletes
 return **409** with `stage_not_empty` or `company_in_use`.
 
-**Creating an application** takes exactly one of `company` (id of an existing company) or
-`company_name` (finds your company with that name, or creates it). Responses include both
-`company` (id) and a nested `company_detail`.
+**Creating an application** needs `job_title` and `listing_url`. Company is optional: send
+`company` (id of an existing company, or `null`) or `company_name` (finds your company with that
+name, or creates it), or neither. Responses include both `company` (id) and a nested
+`company_detail`; both are `null` when there is no company.
+
+## Browser extension
+
+`extension/` saves jobs to your board as you apply on **LinkedIn, Indeed and JobStreet**.
+
+- When a site shows its "application sent" screen, a small card asks whether to save the job
+  (title, company and link are pre-filled and editable).
+- When the Apply button sends you to the company's own site, click the extension icon on the job
+  page instead and press **Save as applied**. This works on any page.
+
+**Install (Chrome, Edge or Brave):** open `chrome://extensions` (or `edge://extensions`), turn on
+**Developer mode**, click **Load unpacked** and pick the `extension/` folder. Click the extension
+icon, enter the API URL (`http://localhost:8000` locally, or your Render URL) and your
+CareerPipeline email and password.
+
+Saved jobs go to the **Applied** stage (or your first stage if there is none), dated today. Each
+listing link is saved only once. Job sites change their pages often: if detection stops working,
+update the selectors and phrases in `extension/sites.js` and click reload on `chrome://extensions`.
 
 ## Design decisions
 
