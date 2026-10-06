@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "CareerPipeline",
+  "version": "1.0.0",
+  "description": "Save jobs you apply to on LinkedIn, Indeed and JobStreet to your CareerPipeline board.",
+  "icons": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": { "16": "icons/16.png", "48": "icons/48.png" }
+  },
+  "background": { "service_worker": "background.js" },
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "http://localhost:8000/*",
+    "http://127.0.0.1:8000/*",
+    "https://*.onrender.com/*"
+  ],
+  "optional_host_permissions": ["https://*/*"],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.linkedin.com/*",
+        "https://*.indeed.com/*",
+        "https://*.jobstreet.com/*"
+      ],
+      "js": ["sites.js", "content.js"]
+    }
+  ]
+}

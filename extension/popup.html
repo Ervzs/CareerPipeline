@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CareerPipeline</title>
+    <style>
+      body {
+        width: 300px;
+        margin: 0;
+        padding: 14px;
+        color: #0f172a;
+        background: #fff;
+        font:
+          13px/1.4 system-ui,
+          sans-serif;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+      label {
+        display: block;
+        margin-top: 6px;
+        color: #475569;
+      }
+      input {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 2px;
+        padding: 6px 8px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font: inherit;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+      }
+      button {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #2563eb;
+        background: #2563eb;
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      .link {
+        padding: 0;
+        border: 0;
+        background: none;
+        color: #2563eb;
+      }
+      .status {
+        margin: 8px 0 0;
+        min-height: 1.4em;
+      }
+      .error {
+        color: #b91c1c;
+      }
+      [hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CareerPipeline</h1>
+
+    <form id="sign-in" hidden>
+      <label>API URL <input name="apiUrl" type="url" required /></label>
+      <label>Email <input name="email" type="email" autocomplete="username" required /></label>
+      <label>
+        Password <input name="password" type="password" autocomplete="current-password" required />
+      </label>
+      <div class="row"><span></span><button type="submit">Sign in</button></div>
+    </form>
+
+    <form id="capture" hidden>
+      <label>Job title <input name="job_title" required /></label>
+      <label>Company <input name="company_name" placeholder="Optional" /></label>
+      <label>Listing URL <input name="listing_url" type="url" required /></label>
+      <div class="row">
+        <button type="button" class="link" id="sign-out">Sign out</button>
+        <button type="submit">Save as applied</button>
+      </div>
+    </form>
+
+    <p class="status" role="status"></p>
+    <script src="popup.js"></script>
+  </body>
+</html>
