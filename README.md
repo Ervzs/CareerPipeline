@@ -2,75 +2,70 @@
 
 [![CI](https://github.com/Ervzs/CareerPipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/Ervzs/CareerPipeline/actions/workflows/ci.yml)
 
-A job application tracker with a CRM-style Kanban board. Each column is a stage of your search
-(Wishlist, Applied, Interviewing, Offer, Rejected, or your own), and each card is an application.
-Drag cards between stages, keep notes on every company, and see where your search stands.
+**Track every job application on a Kanban board, and save jobs straight from LinkedIn, Indeed and
+JobStreet with the browser extension.**
 
-**Try it locally:** follow the setup below, run `python manage.py seed_demo`, then press **Try the
-demo** on the login page. The demo account (`demo@careerpipeline.dev` / `DemoPipeline2026!`) comes
-with a ready-made board.
+**Try it:** <https://career-pipeline-fawn.vercel.app>. Press **Try the demo** on the login page, no
+sign-up needed.
+
+> The API runs on a free host that sleeps when idle, so the first load can take up to a minute.
 
 ![The board](docs/screenshots/board.png)
 
-|  |  |
-|---|---|
-| ![Application details](docs/screenshots/details.png) | ![Pipeline settings](docs/screenshots/settings.png) |
-| Details pane beside the board, with company notes and the activity timeline | Add, rename, delete and reorder stages |
+## Browser extension: add applications in one click
 
-![The dashboard](docs/screenshots/dashboard.png)
+You don't have to type applications in by hand. The CareerPipeline extension does it while you apply:
 
-On a phone the board scrolls sideways and the details cover the screen:
+- **On LinkedIn (Easy Apply), Indeed and JobStreet:** when the site says your application was sent,
+  a small card pops up with the job title, company and link already filled in. Check them, press
+  **Save**, and the job is on your board.
+- **On any other site** (for example when "Apply" takes you to the company's own website): click the
+  extension icon and press **Save as applied**.
 
-<img src="docs/screenshots/board-mobile.png" alt="The board on a phone" width="260">
+Saved jobs go to the **Applied** column, dated today. The same job is never added twice.
 
-## Highlights
+**Install (Chrome, Edge or Brave):**
 
-- **Full stack, end to end:** a PostgreSQL schema with migrations, a Django REST API, a React and
-  TypeScript app, automated tests and CI.
-- **Security-minded authentication:** a short-lived access token kept in memory, a rotating refresh
-  token in an httpOnly cookie, blacklisting on logout, and CORS with credentials.
-- **Multi-user data isolation:** every query is scoped to the signed-in user and every foreign key is
-  validated, with tests for each model.
-- **Data integrity:** transactions and row locks keep card order consistent, and stages or companies
-  that are in use cannot be deleted by accident.
-- **Polished interface:** optimistic drag and drop with rollback, loading, empty and error states,
-  keyboard and screen-reader support, and a layout that works from phone to laptop.
-- **Tested and checked:** 145 backend and 76 frontend tests, plus lint, formatting and type checks
-  on every push.
+1. Download this repository (**Code → Download ZIP**) and unzip it.
+2. Open `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode**.
+3. Click **Load unpacked** and choose the `extension` folder.
+4. Click the CareerPipeline icon and sign in with:
+   - API URL: `https://careerpipeline-api.onrender.com`
+   - your CareerPipeline email and password
 
-## What it does
+## How to use the website
 
-- **Kanban board** with drag and drop between and within columns (mouse, touch, or keyboard).
-  Moves apply instantly and roll back with an explanation if the server refuses them.
-- **Your own pipeline:** add, rename, reorder and delete stages. A stage that still holds
-  applications can't be deleted, and the app explains why.
-- **Applications and companies:** create an application for an existing company or a new one in the
-  same step; edit and delete both. A company with applications can't be deleted.
-- **Details pane:** description, listing link, date applied and the company's notes.
-- **Activity timeline:** log calls, interviews and follow-ups on each application, with the time
-  they happened; edit or delete them later.
-- **Dashboard:** applications per stage, applications per week (last 12 weeks) and a response rate,
-  all computed in the database.
-- **Accounts:** register, log in, or try the demo. Every user only ever sees their own data.
+1. **Sign up**, or press **Try the demo** to explore a ready-made board.
+2. **Add an application.** Only the job title and the job link are needed; company, date and
+   description are optional.
+3. **Drag cards between columns** as your search moves forward: Wishlist, Applied, Interviewing,
+   Offer, Rejected.
+4. **Click a card** to see its details, notes about the company, and an activity timeline where you
+   log calls, interviews and follow-ups.
+5. **Make the board yours:** add, rename, reorder or delete columns.
+6. **Open the Dashboard** to see applications per stage, applications per week and your response rate.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     Browser["Browser<br/>React SPA"]
+    Ext["Browser extension<br/>(LinkedIn, Indeed, JobStreet)"]
     API["Django REST API"]
     DB[("PostgreSQL")]
     GHA["GitHub Actions<br/>CI on every push"]
 
     Browser -- "JSON over HTTPS<br/>Bearer access token" --> API
     Browser -. "httpOnly refresh cookie<br/>(only sent to /api/auth/)" .-> API
+    Ext -- "JSON over HTTPS<br/>Token key" --> API
     API -- "psycopg 3" --> DB
     GHA -. "lint, tests, build" .-> API
 ```
 
 The access token (5 minutes) lives only in JavaScript memory. The refresh token (7 days, rotated on
 every use) is an `HttpOnly` cookie that scripts can't read, so on every page load the app silently
-trades the cookie for a fresh access token.
+trades the cookie for a fresh access token. The extension signs in once and uses its own key, which
+is revoked when you sign out of it.
 
 ## Data model
 
@@ -80,7 +75,7 @@ erDiagram
     USER ||--o{ COMPANY : owns
     USER ||--o{ JOB_APPLICATION : owns
     PIPELINE_STAGE ||--o{ JOB_APPLICATION : "column of"
-    COMPANY ||--o{ JOB_APPLICATION : "applied to"
+    COMPANY |o--o{ JOB_APPLICATION : "applied to"
     JOB_APPLICATION ||--o{ APPLICATION_ACTIVITY : "has notes"
     USER ||--o{ APPLICATION_ACTIVITY : owns
 
@@ -105,7 +100,7 @@ erDiagram
     JOB_APPLICATION {
         int id PK
         int user_id FK
-        int company_id FK
+        int company_id FK "optional"
         int stage_id FK
         string job_title
         text job_description
@@ -126,9 +121,9 @@ erDiagram
     }
 ```
 
-Every row carries `user_id`, the multi-tenancy key. `stage` and `company` use `ON DELETE PROTECT`,
-which is what blocks deleting something that is still in use. Activity notes belong to their
-application and are deleted with it.
+Every row carries `user_id`, so each user only ever sees their own data. Company is optional, because
+many job postings hide who is hiring. A stage or company that still has applications can't be deleted
+(`ON DELETE PROTECT`). Activity notes belong to their application and are deleted with it.
 
 ## Tech stack
 
@@ -137,104 +132,8 @@ application and are deleted with it.
 | Backend | Python, Django 5.2 LTS, Django REST Framework, SimpleJWT, drf-spectacular (OpenAPI), django-cors-headers, WhiteNoise, gunicorn |
 | Database | PostgreSQL through psycopg 3 |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, TanStack Query, React Router, dnd-kit |
+| Browser extension | Chrome Manifest V3, plain JavaScript |
 | Quality | pytest + pytest-django, ruff, Vitest + Testing Library, oxlint, Prettier, GitHub Actions |
-
-## Quality
-
-- **Backend:** 145 pytest tests covering authentication (hashing, cookie flags, rotation, logout and
-  blacklisting), default stages, **tenant isolation for every model** (user A can't read, change,
-  delete or reference user B's data), card re-sequencing, stage reorder validation, blocked deletes,
-  the dashboard numbers, activity notes, the seed command, and the production settings. `ruff check` and `ruff format --check` are clean.
-- **Frontend:** 76 Vitest tests covering the API client (token refresh, single-flight retry), auth
-  flow, route protection, the board, optimistic move with rollback, every dialog, the dashboard and
-  the activity timeline.
-- **CI** runs all of it on every push: backend on Python 3.13 and 3.14 against a real PostgreSQL,
-  frontend on Node 24.
-- The drag gesture, the dashboard, the activity timeline and the responsive layout were also
-  exercised in a real browser (Edge) against a running backend. That run caught a real bug (a
-  Tailwind 4 build detail that dropped the fifth stage colour), which now has a regression test.
-
-## Repository layout
-
-```
-backend/            Django REST API (accounts = auth, pipeline = stages/companies/applications)
-frontend/           React + TypeScript single-page app
-extension/          Chrome/Edge/Brave extension that saves jobs you apply to
-docs/screenshots/   Images used in this README
-.github/workflows/  CI: lint, tests and build on every push
-```
-
-## Backend — local setup (Windows / PowerShell)
-
-Requirements: Python 3.12+ and PostgreSQL 14+ (no Docker needed).
-
-### 1. Create the PostgreSQL role and database
-
-Run once, as the `postgres` superuser (you will be prompted for its password). Pick your own
-password for the app role:
-
-```powershell
-psql -U postgres -c "CREATE ROLE career_user LOGIN PASSWORD 'choose-a-password' CREATEDB;"
-psql -U postgres -c "CREATE DATABASE careerpipeline OWNER career_user;"
-```
-
-`CREATEDB` lets pytest create and drop its own `test_careerpipeline` database.
-If the role already exists, use `ALTER ROLE career_user PASSWORD '...' CREATEDB;` instead.
-
-### 2. Install and configure
-
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements-dev.txt
-Copy-Item .env.example .env      # then edit .env: SECRET_KEY and DB_PASSWORD at least
-```
-
-All configuration comes from environment variables (see `backend/.env.example`). `.env` is
-git-ignored and must never be committed.
-
-### 3. Migrate, seed, run
-
-```powershell
-python manage.py migrate
-python manage.py seed_demo       # demo account + sample board; safe to re-run (it resets it)
-python manage.py runserver
-```
-
-- API: <http://localhost:8000/api/>
-- Interactive docs (Swagger UI): <http://localhost:8000/api/docs/> — raw schema at `/api/schema/`
-- Django admin: create an admin with `python manage.py createsuperuser`
-
-### 4. Tests and lint
-
-```powershell
-pytest                 # needs the CREATEDB privilege from step 1
-ruff check .
-ruff format --check .
-```
-
-## Frontend — local setup
-
-Requirements: Node 20+ (developed on Node 24) and the backend running on port 8000.
-
-```powershell
-cd frontend
-npm install
-Copy-Item .env.example .env      # VITE_API_URL and the demo credentials
-npm run dev                      # http://localhost:5173
-```
-
-| Command | Purpose |
-|---|---|
-| `npm run dev` | Dev server with hot reload |
-| `npm test` | Unit and component tests (Vitest + Testing Library) |
-| `npm run lint` | oxlint |
-| `npm run build` | Type-check and production build into `dist/` |
-| `npm run format` | Prettier |
-
-Keyboard dragging: Space picks a card up, the arrow keys move it, Space drops it, Escape cancels.
-Enter opens the card's details. On touch screens, press and hold a card briefly to drag it.
 
 ## API overview
 
@@ -269,65 +168,28 @@ return **409** with `stage_not_empty` or `company_in_use`.
 name, or creates it), or neither. Responses include both `company` (id) and a nested
 `company_detail`; both are `null` when there is no company.
 
-## Browser extension
+Interactive API docs (Swagger UI) are at `/api/docs/`.
 
-`extension/` saves jobs to your board as you apply on **LinkedIn, Indeed and JobStreet**.
+## Run it locally
 
-- When a site shows its "application sent" screen, a small card asks whether to save the job
-  (title, company and link are pre-filled and editable).
-- When the Apply button sends you to the company's own site, click the extension icon on the job
-  page instead and press **Save as applied**. This works on any page.
+Requirements: Python 3.12+, PostgreSQL 14+ and Node 20+.
 
-**Install (Chrome, Edge or Brave):** open `chrome://extensions` (or `edge://extensions`), turn on
-**Developer mode**, click **Load unpacked** and pick the `extension/` folder. Click the extension
-icon, enter the API URL (`http://localhost:8000` locally, or your Render URL) and your
-CareerPipeline email and password.
+```powershell
+# Backend (http://localhost:8000)
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+Copy-Item .env.example .env      # set SECRET_KEY and the database settings
+python manage.py migrate
+python manage.py seed_demo       # creates the demo account
+python manage.py runserver
 
-Saved jobs go to the **Applied** stage (or your first stage if there is none), dated today. Each
-listing link is saved only once. Job sites change their pages often: if detection stops working,
-update the selectors and phrases in `extension/sites.js` and click reload on `chrome://extensions`.
+# Frontend (http://localhost:5173), in a second terminal
+cd frontend
+npm install
+Copy-Item .env.example .env
+npm run dev
+```
 
-## Design decisions
-
-- **Custom user model from the first migration** — email is the login field; there is no username.
-- **Tenant isolation by construction** — every viewset filters by `request.user`, `user` is set
-  server-side and never read from the client, and every foreign-key field only accepts objects the
-  caller owns (`OwnedPrimaryKeyRelatedField`). Another user's ids return 404 or a validation error.
-  `tests/test_isolation.py` checks this for every model.
-- **Deleting is blocked, not cascaded** — a stage or company that still has applications cannot be
-  deleted (`on_delete=PROTECT` → 409), so a click can never silently destroy applications.
-- **Positions are managed by the server** — cards change column or order only through the move
-  endpoint, which runs in a transaction with row locks and keeps positions contiguous (0..n-1).
-  The frontend predicts the result with a pure function (`moveApplication`) that mirrors those rules,
-  which is what makes the optimistic update safe to roll back.
-- **No pagination** — one person's board is small and the Kanban needs all of it at once.
-- **Refresh token in an httpOnly cookie** — JavaScript only ever holds the 5-minute access token.
-- **Dashboard numbers come from SQL aggregations** (`Count`, `TruncWeek`, filtered counts), in three
-  queries however many applications there are. Response rate = applications with a date applied that
-  now sit in a column after "Applied", divided by all applications with a date applied; it is `null`,
-  never a division by zero, when nothing has been applied to yet.
-- **One error shape** — the API and the UI agree on `{error: {code, message, details}}`, so forms can
-  show field errors and the UI can react to specific codes.
-
-### Cookie, CORS and token settings
-
-| Setting (env var) | Local development | Production (app and API on different sites) |
-|---|---|---|
-| `REFRESH_COOKIE_SAMESITE` | `Lax` | `None` |
-| `REFRESH_COOKIE_SECURE` | `False` | `True` (required with `SameSite=None`) |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | the exact frontend origin(s) |
-| `CORS_ALLOW_CREDENTIALS` | always `True` | always `True` |
-
-The cookie is `HttpOnly`, scoped to `Path=/api/auth/`, and the refresh token rotates on every use
-(the previous one is blacklisted). Access tokens last 5 minutes, refresh tokens 7 days.
-
-CSRF note: the cookie is only sent to the `/api/auth/` endpoints. A cross-site page can trigger a
-refresh request, but CORS stops it from reading the response, so it never obtains the access token;
-all other endpoints authenticate with the `Authorization` header, which browsers don't attach
-automatically.
-
-**Known limits:** browsers that block third-party cookies (Safari, Brave) won't keep a cross-site
-refresh cookie, so when the app and API are on different sites those users have to log in again
-after a reload; serving both from one domain, or proxying the API through the frontend host, avoids
-it. And because refresh tokens rotate, closing the tab at the exact moment a refresh is in flight
-can force a new login.
+Tests: `pytest` in `backend/`, `npm test` in `frontend/`.
