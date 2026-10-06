@@ -47,7 +47,10 @@ class JobApplication(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="applications"
     )
     # PROTECT: a company/stage that still has applications cannot be deleted.
-    company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name="applications")
+    # Company is optional: many postings hide who is hiring.
+    company = models.ForeignKey(
+        Company, on_delete=models.PROTECT, related_name="applications", null=True, blank=True
+    )
     stage = models.ForeignKey(PipelineStage, on_delete=models.PROTECT, related_name="applications")
     job_title = models.CharField(max_length=200)
     job_description = models.TextField(blank=True)
@@ -61,7 +64,7 @@ class JobApplication(models.Model):
         ordering = ["stage__order", "position"]
 
     def __str__(self):
-        return f"{self.job_title} @ {self.company}"
+        return f"{self.job_title} @ {self.company}" if self.company else self.job_title
 
 
 class ApplicationActivity(models.Model):

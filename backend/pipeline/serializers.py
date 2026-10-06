@@ -41,13 +41,17 @@ class CompanySerializer(serializers.ModelSerializer):
 class JobApplicationSerializer(serializers.ModelSerializer):
     """A card on the board.
 
-    Writes: send `company` (existing id) OR `company_name` (finds or creates a company).
-    Reads: `company` is the id and `company_detail` the nested company, so the board
+    Writes: `listing_url` is required on create. Company is optional: send `company`
+    (existing id or null) OR `company_name` (finds or creates a company), or neither.
+    Reads: `company` is the id and `company_detail` the nested company (both null when
+    there is no company), so the board
     can render a card (and its details panel) from one request.
     `stage` is chosen on create; afterwards cards change column only via the move endpoint.
     """
 
-    company = OwnedPrimaryKeyRelatedField(queryset=Company.objects.all(), required=False)
+    company = OwnedPrimaryKeyRelatedField(
+        queryset=Company.objects.all(), required=False, allow_null=True
+    )
     company_name = serializers.CharField(write_only=True, required=False, max_length=200)
     company_detail = CompanySerializer(source="company", read_only=True)
     stage = OwnedPrimaryKeyRelatedField(queryset=PipelineStage.objects.all())
@@ -77,10 +81,8 @@ class JobApplicationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"company": ["Send either `company` or `company_name`, not both."]}
             )
-        if self.instance is None and not (has_id or has_name):
-            raise serializers.ValidationError(
-                {"company": ["Send `company` (an id) or `company_name` (to create one)."]}
-            )
+        if self.instance is None and not attrs.get("listing_url"):
+            raise serializers.ValidationError({"listing_url": ["Paste the job listing link."]})
         if self.instance is not None and "stage" in attrs and attrs["stage"] != self.instance.stage:
             raise serializers.ValidationError(
                 {"stage": ["Use the move endpoint to change an application's stage."]}

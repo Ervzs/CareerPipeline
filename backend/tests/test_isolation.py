@@ -156,6 +156,7 @@ def test_client_supplied_user_is_ignored_for_applications(client_a, user_a, user
             "stage": stage_of(user_a, "Applied").id,
             "company_name": "Acme",
             "job_title": "Dev",
+            "listing_url": "https://jobs.test/1",
             "user": user_b.id,
         },
         format="json",
@@ -184,6 +185,7 @@ def test_company_name_does_not_reuse_other_users_company(client_a, user_a, stage
             "stage": stage_of(user_a, "Applied").id,
             "company_name": b_objects["companies"].name,
             "job_title": "Dev",
+            "listing_url": "https://jobs.test/1",
         },
         format="json",
     )

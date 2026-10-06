@@ -17,6 +17,7 @@ export function CompaniesDialog({ onClose }: { onClose: () => void }) {
   const counts = useMemo(() => {
     const result = new Map<number, number>()
     for (const application of applications.data ?? []) {
+      if (application.company === null) continue
       result.set(application.company, (result.get(application.company) ?? 0) + 1)
     }
     return result

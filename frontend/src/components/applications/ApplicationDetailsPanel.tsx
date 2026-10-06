@@ -56,7 +56,7 @@ export function ApplicationDetailsPanel({ application, stages, onClose }: Props)
   const stageIndex = stages.findIndex((stage) => stage.id === application.stage)
   const company = application.company_detail
   const listingHref = application.listing_url ? safeHref(application.listing_url) : null
-  const websiteHref = company.website ? safeHref(company.website) : null
+  const websiteHref = company?.website ? safeHref(company.website) : null
 
   // Move focus to the panel when a card is opened so keyboard users land on its content.
   useEffect(() => {
@@ -90,7 +90,7 @@ export function ApplicationDetailsPanel({ application, stages, onClose }: Props)
         <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-line bg-surface px-5 py-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold leading-snug">{application.job_title}</h2>
-            <p className="mt-0.5 text-ink-soft">{company.name}</p>
+            {company && <p className="mt-0.5 text-ink-soft">{company.name}</p>}
           </div>
           <button type="button" className={btnGhost} onClick={onClose} aria-label="Close details">
             ✕
@@ -142,33 +142,35 @@ export function ApplicationDetailsPanel({ application, stages, onClose }: Props)
             )}
           </Section>
 
-          <Section title={`About ${company.name}`}>
-            {websiteHref && (
-              <p className="mb-1.5 text-sm">
-                <a
-                  href={websiteHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="break-all text-signal hover:underline"
-                >
-                  {new URL(websiteHref).hostname}
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
-              </p>
-            )}
-            {company.notes ? (
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{company.notes}</p>
-            ) : (
-              <Empty>No notes about this company yet.</Empty>
-            )}
-            <button
-              type="button"
-              className={`${btnGhost} -ml-3 mt-1`}
-              onClick={() => setEditing('company')}
-            >
-              Edit company
-            </button>
-          </Section>
+          {company && (
+            <Section title={`About ${company.name}`}>
+              {websiteHref && (
+                <p className="mb-1.5 text-sm">
+                  <a
+                    href={websiteHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="break-all text-signal hover:underline"
+                  >
+                    {new URL(websiteHref).hostname}
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                </p>
+              )}
+              {company.notes ? (
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{company.notes}</p>
+              ) : (
+                <Empty>No notes about this company yet.</Empty>
+              )}
+              <button
+                type="button"
+                className={`${btnGhost} -ml-3 mt-1`}
+                onClick={() => setEditing('company')}
+              >
+                Edit company
+              </button>
+            </Section>
+          )}
 
           <Section title="Activity">
             <ActivityTimeline applicationId={application.id} />
@@ -224,7 +226,7 @@ export function ApplicationDetailsPanel({ application, stages, onClose }: Props)
           onClose={() => setEditing(null)}
         />
       )}
-      {editing === 'company' && (
+      {editing === 'company' && company && (
         <CompanyEditDialog company={company} onClose={() => setEditing(null)} />
       )}
     </>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { fieldErrorsOf, formMessageOf } from '../../lib/errors'
+import { toDateTimeInput } from '../../lib/format'
 import { useCompanies, useCreateApplication, useUpdateApplication } from '../../lib/queries'
 import type { Application, ApplicationInput, Stage } from '../../lib/types'
 import { Dialog } from '../Dialog'
@@ -26,19 +27,22 @@ export function ApplicationFormDialog({ stages, application, defaultStageId, onC
   const update = useUpdateApplication()
   const { showToast } = useToast()
 
-  const [companyChoice, setCompanyChoice] = useState(editing ? String(application.company) : '')
+  const [companyChoice, setCompanyChoice] = useState(String(application?.company ?? ''))
   const [companyName, setCompanyName] = useState('')
   const [stageId, setStageId] = useState(String(defaultStageId ?? stages[0]?.id ?? ''))
   const [jobTitle, setJobTitle] = useState(application?.job_title ?? '')
   const [description, setDescription] = useState(application?.job_description ?? '')
   const [listingUrl, setListingUrl] = useState(application?.listing_url ?? '')
-  const [dateApplied, setDateApplied] = useState(application?.date_applied ?? '')
+  // A new application is usually added right after applying, so default to today.
+  const [dateApplied, setDateApplied] = useState(() =>
+    editing
+      ? (application.date_applied ?? '')
+      : toDateTimeInput(new Date().toISOString()).slice(0, 10),
+  )
   const [error, setError] = useState<unknown>(null)
 
   const existing = companies.data ?? []
-  // With no saved companies there is nothing to pick, so go straight to "new company".
-  const creatingCompany =
-    companyChoice === NEW_COMPANY || (!editing && companyChoice === '' && existing.length === 0)
+  const creatingCompany = companyChoice === NEW_COMPANY
   const fieldErrors = fieldErrorsOf(error)
   const pending = create.isPending || update.isPending
 
@@ -48,9 +52,7 @@ export function ApplicationFormDialog({ stages, application, defaultStageId, onC
 
     const company: Pick<ApplicationInput, 'company' | 'company_name'> = creatingCompany
       ? { company_name: companyName }
-      : companyChoice
-        ? { company: Number(companyChoice) }
-        : {}
+      : { company: companyChoice ? Number(companyChoice) : null }
     const body = {
       ...company,
       job_title: jobTitle,
@@ -89,6 +91,17 @@ export function ApplicationFormDialog({ stages, application, defaultStageId, onC
           required
         />
 
+        <TextField
+          label="Listing URL"
+          type="url"
+          inputMode="url"
+          placeholder="https://"
+          value={listingUrl}
+          onChange={(e) => setListingUrl(e.target.value)}
+          error={fieldErrors.listing_url}
+          required={!editing}
+        />
+
         <SelectField
           label="Company"
           value={creatingCompany ? NEW_COMPANY : companyChoice}
@@ -96,7 +109,7 @@ export function ApplicationFormDialog({ stages, application, defaultStageId, onC
           error={creatingCompany ? undefined : fieldErrors.company}
           disabled={companies.isPending}
         >
-          {!editing && <option value="">Choose a company…</option>}
+          <option value="">No company</option>
           {existing.map((company) => (
             <option key={company.id} value={company.id}>
               {company.name}
@@ -137,16 +150,6 @@ export function ApplicationFormDialog({ stages, application, defaultStageId, onC
           onChange={(e) => setDateApplied(e.target.value)}
           error={fieldErrors.date_applied}
           hint="Leave empty for a job you haven't applied to yet."
-        />
-
-        <TextField
-          label="Listing URL"
-          type="url"
-          inputMode="url"
-          placeholder="https://"
-          value={listingUrl}
-          onChange={(e) => setListingUrl(e.target.value)}
-          error={fieldErrors.listing_url}
         />
 
         <TextAreaField

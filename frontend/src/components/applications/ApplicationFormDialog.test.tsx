@@ -35,7 +35,9 @@ test('creates an application for an existing company', async () => {
   )
 
   await userEvent.type(screen.getByLabelText('Job title'), 'Backend Engineer')
+  await userEvent.type(screen.getByLabelText('Listing URL'), 'https://jobs.test/1')
   await userEvent.selectOptions(await screen.findByLabelText('Company'), 'Acme')
+  await userEvent.clear(screen.getByLabelText('Date applied'))
   await userEvent.type(screen.getByLabelText('Date applied'), '2026-03-04')
   await userEvent.click(screen.getByRole('button', { name: 'Add application' }))
 
@@ -44,6 +46,7 @@ test('creates an application for an existing company', async () => {
     company: 7,
     stage: 2,
     job_title: 'Backend Engineer',
+    listing_url: 'https://jobs.test/1',
     date_applied: '2026-03-04',
   })
   expect(sent('POST')).not.toHaveProperty('company_name')
@@ -60,15 +63,28 @@ test('creates a new company in the same request', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Add application' }))
 
   await waitFor(() => expect(onClose).toHaveBeenCalled())
-  expect(sent('POST')).toMatchObject({ company_name: 'Globex', stage: 1, date_applied: null })
+  expect(sent('POST')).toMatchObject({ company_name: 'Globex', stage: 1 })
   expect(sent('POST')).not.toHaveProperty('company')
 })
 
-test('with no saved companies it asks for a new company name straight away', async () => {
+test('quick add needs only a job title and listing URL, dated today', async () => {
   serve([])
-  renderWithProviders(<ApplicationFormDialog stages={stages} onClose={() => {}} />)
+  const onClose = vi.fn()
+  renderWithProviders(<ApplicationFormDialog stages={stages} onClose={onClose} />)
 
-  expect(await screen.findByLabelText('New company name')).toBeInTheDocument()
+  await userEvent.type(screen.getByLabelText('Job title'), 'QA')
+  await userEvent.type(screen.getByLabelText('Listing URL'), 'https://jobs.test/2')
+  await userEvent.click(screen.getByRole('button', { name: 'Add application' }))
+
+  await waitFor(() => expect(onClose).toHaveBeenCalled())
+  const today = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  expect(sent('POST')).toMatchObject({
+    company: null,
+    job_title: 'QA',
+    listing_url: 'https://jobs.test/2',
+    date_applied: `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`,
+  })
 })
 
 test('shows field errors from the API and keeps the dialog open', async () => {

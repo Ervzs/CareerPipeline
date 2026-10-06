@@ -65,6 +65,16 @@ test('empty fields explain what to do instead of showing blanks', () => {
   expect(screen.queryByRole('link')).not.toBeInTheDocument()
 })
 
+test('hides the company section when there is no company', () => {
+  const noCompany = makeApplication({ id: 8, company: null, company_detail: null }) as never
+  renderWithProviders(
+    <ApplicationDetailsPanel application={noCompany} stages={stages} onClose={() => {}} />,
+  )
+
+  expect(screen.queryByText(/About /)).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Edit company' })).not.toBeInTheDocument()
+})
+
 test('never renders a javascript: listing URL as a link', () => {
   const evil = makeApplication({ id: 7, listing_url: 'javascript:alert(1)' }) as never
   renderWithProviders(

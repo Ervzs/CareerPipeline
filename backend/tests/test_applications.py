@@ -4,7 +4,12 @@ URL = "/api/applications/"
 
 
 def payload(stage, **extra):
-    return {"stage": stage.id, "job_title": "Backend Engineer", **extra}
+    return {
+        "stage": stage.id,
+        "job_title": "Backend Engineer",
+        "listing_url": "https://jobs.test/1",
+        **extra,
+    }
 
 
 def test_applications_require_authentication(api_client):
@@ -44,20 +49,32 @@ def test_company_name_reuses_existing_company_case_insensitively(client_a, user_
     assert user_a.companies.count() == 1
 
 
-def test_create_requires_exactly_one_of_company_or_company_name(client_a, user_a, stage_of):
-    stage = stage_of(user_a, "Applied")
-    company = Company.objects.create(user=user_a, name="Acme")
+def test_create_without_company(client_a, user_a, stage_of):
+    response = client_a.post(URL, payload(stage_of(user_a, "Applied")), format="json")
+    assert response.status_code == 201
+    assert response.json()["company"] is None
+    assert response.json()["company_detail"] is None
 
-    neither = client_a.post(URL, payload(stage), format="json")
-    both = client_a.post(
-        URL, payload(stage, company=company.id, company_name="Other"), format="json"
+
+def test_create_rejects_both_company_and_company_name(client_a, user_a, stage_of):
+    company = Company.objects.create(user=user_a, name="Acme")
+    response = client_a.post(
+        URL,
+        payload(stage_of(user_a, "Applied"), company=company.id, company_name="Other"),
+        format="json",
     )
-    assert neither.status_code == 400
-    assert both.status_code == 400
-    assert "company" in neither.json()["error"]["details"]
-    assert "company" in both.json()["error"]["details"]
+    assert response.status_code == 400
+    assert "company" in response.json()["error"]["details"]
     assert not JobApplication.objects.exists()
     assert user_a.companies.count() == 1
+
+
+def test_create_requires_listing_url(client_a, user_a, stage_of):
+    response = client_a.post(
+        URL, payload(stage_of(user_a, "Applied"), listing_url=""), format="json"
+    )
+    assert response.status_code == 400
+    assert "listing_url" in response.json()["error"]["details"]
 
 
 def test_create_appends_card_to_the_end_of_the_column(client_a, user_a, stage_of):
@@ -70,7 +87,9 @@ def test_create_appends_card_to_the_end_of_the_column(client_a, user_a, stage_of
 
 
 def test_stage_is_required_and_dates_are_validated(client_a, stage_of, user_a):
-    missing_stage = client_a.post(URL, {"job_title": "X", "company_name": "A"}, format="json")
+    missing_stage = client_a.post(
+        URL, {"job_title": "X", "listing_url": "https://jobs.test/1"}, format="json"
+    )
     bad_date = client_a.post(
         URL,
         payload(stage_of(user_a, "Applied"), company_name="A", date_applied="nope"),
@@ -101,6 +120,13 @@ def test_update_can_switch_company_by_name(client_a, user_a, stage_of, make_appl
     response = client_a.patch(f"{URL}{app.id}/", {"company_name": "Initech"}, format="json")
     assert response.status_code == 200
     assert response.json()["company_detail"]["name"] == "Initech"
+
+
+def test_update_can_clear_company(client_a, user_a, stage_of, make_application):
+    app = make_application(user_a, stage_of(user_a, "Applied"))
+    response = client_a.patch(f"{URL}{app.id}/", {"company": None}, format="json")
+    assert response.status_code == 200
+    assert response.json()["company_detail"] is None
 
 
 def test_update_cannot_change_stage_or_position(client_a, user_a, stage_of, make_application):

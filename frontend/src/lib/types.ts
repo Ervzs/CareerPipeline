@@ -18,8 +18,8 @@ export interface Company {
 
 export interface Application {
   id: number
-  company: number
-  company_detail: Company
+  company: number | null
+  company_detail: Company | null
   stage: number
   job_title: string
   job_description: string
@@ -30,14 +30,15 @@ export interface Application {
   updated_at: string
 }
 
-/** Fields accepted when creating an application: send `company` OR `company_name`. */
+/** Fields accepted when creating an application. Company is optional: send `company`
+ * (an id or null) OR `company_name`, or neither. */
 export interface ApplicationInput {
   stage: number
   job_title: string
   job_description?: string
-  listing_url?: string
+  listing_url: string
   date_applied?: string | null
-  company?: number
+  company?: number | null
   company_name?: string
 }
 
