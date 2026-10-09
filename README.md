@@ -26,7 +26,8 @@ Saved jobs go to the **Applied** column, dated today. The same job is never adde
 
 **Install (Chrome, Edge or Brave):**
 
-1. Download this repository (**Code → Download ZIP**) and unzip it.
+1. Get the [`extension` folder](https://github.com/Ervzs/CareerPipeline/tree/main/extension). You
+   only need this folder, not the whole repository.
 2. Open `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode**.
 3. Click **Load unpacked** and choose the `extension` folder.
 4. Click the CareerPipeline icon and sign in with your CareerPipeline email and password.
