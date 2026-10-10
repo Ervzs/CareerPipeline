@@ -16,6 +16,14 @@ def test_applications_require_authentication(api_client):
     assert api_client.get(URL).status_code == 401
 
 
+def test_create_accepts_a_very_long_url(client_a, user_a, stage_of):
+    long_url = "https://jobs.test/listing?ref=" + "x" * 3000
+    stage = stage_of(user_a, "Wishlist")
+    response = client_a.post(URL, payload(stage, listing_url=long_url), format="json")
+    assert response.status_code == 201
+    assert response.json()["listing_url"] == long_url
+
+
 def test_create_with_existing_company(client_a, user_a, stage_of):
     company = Company.objects.create(user=user_a, name="Acme", notes="Remote friendly")
     stage = stage_of(user_a, "Wishlist")

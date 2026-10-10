@@ -34,6 +34,13 @@ def test_capture_twice_returns_the_existing_card(client_a):
     assert JobApplication.objects.count() == 1
 
 
+def test_capture_accepts_a_very_long_url(client_a):
+    long_url = "https://www.linkedin.com/jobs/search-results/?currentJobId=1&q=" + "x" * 3000
+    response = client_a.post(URL, {**JOB, "listing_url": long_url}, format="json")
+    assert response.status_code == 201
+    assert response.json()["listing_url"] == long_url
+
+
 def test_capture_falls_back_to_the_first_stage(client_a, user_a, stage_of):
     stage_of(user_a, "Applied").delete()
     response = client_a.post(URL, JOB, format="json")

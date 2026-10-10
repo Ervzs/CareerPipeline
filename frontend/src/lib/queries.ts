@@ -21,10 +21,17 @@ export const queryKeys = {
 export const useStages = () =>
   useQuery({ queryKey: queryKeys.stages, queryFn: () => api<Stage[]>('/api/stages/') })
 
+/**
+ * Applications can change outside this tab (the browser extension, another device), so the
+ * list is re-fetched every few seconds while the tab is visible and when you come back to it.
+ */
+const LIVE = { refetchInterval: 5000, refetchOnWindowFocus: true } as const
+
 export const useApplications = () =>
   useQuery({
     queryKey: queryKeys.applications,
     queryFn: () => api<Application[]>('/api/applications/'),
+    ...LIVE,
   })
 
 interface MoveInput {
@@ -188,7 +195,7 @@ export function useDeleteApplication() {
 
 /** Always refetched when the page opens (default staleTime), so it never shows old numbers for long. */
 export const useDashboard = () =>
-  useQuery({ queryKey: ['dashboard'], queryFn: () => api<Dashboard>('/api/dashboard/') })
+  useQuery({ queryKey: ['dashboard'], queryFn: () => api<Dashboard>('/api/dashboard/'), ...LIVE })
 
 // --- activity notes ---------------------------------------------------------------
 

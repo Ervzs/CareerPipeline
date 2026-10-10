@@ -1,8 +1,17 @@
+import sys
+
 from django.conf import settings
+from django.core.validators import URLValidator
 from django.db import models
 from django.utils import timezone
 
 DEFAULT_STAGE_NAMES = ["Wishlist", "Applied", "Interviewing", "Offer", "Rejected"]
+
+
+class AnyLengthURLValidator(URLValidator):
+    """Django's URLValidator rejects URLs over 2048 characters; job-site links can be longer."""
+
+    max_length = sys.maxsize
 
 
 class PipelineStage(models.Model):
@@ -54,7 +63,7 @@ class JobApplication(models.Model):
     stage = models.ForeignKey(PipelineStage, on_delete=models.PROTECT, related_name="applications")
     job_title = models.CharField(max_length=200)
     job_description = models.TextField(blank=True)
-    listing_url = models.URLField(max_length=500, blank=True)
+    listing_url = models.TextField(blank=True, validators=[AnyLengthURLValidator()])
     date_applied = models.DateField(null=True, blank=True)
     position = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
