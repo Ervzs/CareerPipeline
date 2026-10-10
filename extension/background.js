@@ -1,13 +1,5 @@
-// The only part of the extension that talks to the CareerPipeline API. The side panel and the
+// The only part of the extension that talks to the CareerPipeline API. The popup and the
 // on-page card send it messages; it keeps { apiUrl, token } in chrome.storage.local.
-
-// The toolbar icon opens the side panel and tells it to read the current tab. The click is
-// what lets the extension read pages outside the job sites (activeTab).
-chrome.action.onClicked.addListener((tab) => {
-  chrome.sidePanel.open({ windowId: tab.windowId })
-  // Not open yet: the panel reads the tab itself when it loads.
-  chrome.runtime.sendMessage({ type: 'refill' }).catch(() => {})
-})
 
 chrome.runtime.onMessage.addListener((message, _sender, reply) => {
   handle(message).then(reply, (error) => reply({ error: error.message }))

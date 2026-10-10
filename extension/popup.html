@@ -5,6 +5,7 @@
     <title>CareerPipeline</title>
     <style>
       body {
+        width: 300px;
         margin: 0;
         padding: 14px;
         color: #0f172a;
@@ -13,14 +14,8 @@
           13px/1.4 system-ui,
           sans-serif;
       }
-      header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 8px;
-      }
       h1 {
-        margin: 0;
+        margin: 0 0 8px;
         font-size: 15px;
       }
       label {
@@ -76,10 +71,7 @@
     </style>
   </head>
   <body>
-    <header>
-      <h1>CareerPipeline</h1>
-      <button type="button" class="link" id="close">Close</button>
-    </header>
+    <h1>CareerPipeline</h1>
 
     <form id="sign-in" hidden>
       <label>API URL <input name="apiUrl" type="url" required /></label>

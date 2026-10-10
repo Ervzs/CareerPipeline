@@ -21,8 +21,6 @@ You don't have to type applications in by hand. The CareerPipeline extension doe
   **Save**, and the job is on your board.
 - **On any other site** (for example when "Apply" takes you to the company's own website): click the
   extension icon and press **Save as applied**.
-- The extension icon opens a side panel that stays open while you browse. On LinkedIn, Indeed and
-  JobStreet it fills in each job as you click through listings. Press **Close** to hide it.
 
 Saved jobs go to the **Applied** column, dated today. The same job is never added twice.
 
