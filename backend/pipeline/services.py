@@ -2,7 +2,7 @@
 lives here."""
 
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import F, Max
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
@@ -61,10 +61,10 @@ def get_or_create_company(user, name):
 # --- applications -----------------------------------------------------------
 @transaction.atomic
 def create_application(user, stage, **fields):
-    """Create a card at the bottom of its column."""
-    PipelineStage.objects.select_for_update().get(pk=stage.pk)  # serialise appends per column
-    position = JobApplication.objects.filter(stage=stage).count()
-    return JobApplication.objects.create(user=user, stage=stage, position=position, **fields)
+    """Create a card at the top of its column, so the newest cards come first."""
+    PipelineStage.objects.select_for_update().get(pk=stage.pk)  # serialise inserts per column
+    JobApplication.objects.filter(stage=stage).update(position=F("position") + 1)
+    return JobApplication.objects.create(user=user, stage=stage, position=0, **fields)
 
 
 def capture_application(user, listing_url, job_title, company_name="", date_applied=None):

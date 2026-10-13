@@ -85,13 +85,17 @@ def test_create_requires_listing_url(client_a, user_a, stage_of):
     assert "listing_url" in response.json()["error"]["details"]
 
 
-def test_create_appends_card_to_the_end_of_the_column(client_a, user_a, stage_of):
+def test_create_puts_newest_card_at_the_top_of_the_column(client_a, user_a, stage_of):
     stage = stage_of(user_a, "Applied")
-    positions = [
-        client_a.post(URL, payload(stage, company_name="Acme"), format="json").json()["position"]
-        for _ in range(3)
+    for title in ["Job 1", "Job 2", "Job 3"]:
+        response = client_a.post(URL, payload(stage, job_title=title), format="json")
+        assert response.json()["position"] == 0
+    cards = JobApplication.objects.filter(stage=stage).order_by("position")
+    assert list(cards.values_list("job_title", "position")) == [
+        ("Job 3", 0),
+        ("Job 2", 1),
+        ("Job 1", 2),
     ]
-    assert positions == [0, 1, 2]
 
 
 def test_stage_is_required_and_dates_are_validated(client_a, stage_of, user_a):
