@@ -1,12 +1,13 @@
 import datetime
 
 import pytest
+from django.utils import timezone
 
 from pipeline.dashboard import WEEKS_SHOWN, build_dashboard, monday_of
 from pipeline.models import Company, JobApplication
 
 URL = "/api/dashboard/"
-TODAY = datetime.date.today()
+TODAY = timezone.localdate()  # same "today" as the app (server time zone)
 
 
 def days_ago(n):
