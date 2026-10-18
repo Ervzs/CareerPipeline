@@ -105,7 +105,8 @@ def move_application(application, target_stage, position):
     """Move a card to `position` (zero-based, clamped) in `target_stage`.
 
     Both the source and target columns are locked and re-sequenced so positions stay
-    contiguous. The caller must have verified that both objects belong to the same user.
+    contiguous. Moving an undated card into "Applied" sets its date to today.
+    The caller must have verified that both objects belong to the same user.
     """
     columns = {application.stage_id, target_stage.id}
     cards = list(
@@ -121,6 +122,8 @@ def move_application(application, target_stage, position):
     target.insert(position, moved)
     moved.stage_id = target_stage.id
     moved.updated_at = timezone.now()
+    if target_stage.name.lower() == "applied" and moved.date_applied is None:
+        moved.date_applied = timezone.localdate()
 
     changed = list(target)
     if source_id != target_stage.id:
@@ -131,5 +134,5 @@ def move_application(application, target_stage, position):
     for index, card in enumerate(target):
         card.position = index
 
-    JobApplication.objects.bulk_update(changed, ["stage", "position", "updated_at"])
+    JobApplication.objects.bulk_update(changed, ["stage", "position", "updated_at", "date_applied"])
     return moved

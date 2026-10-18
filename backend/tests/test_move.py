@@ -1,4 +1,7 @@
+from datetime import date
+
 import pytest
+from django.utils import timezone
 
 from pipeline.models import JobApplication
 
@@ -92,3 +95,25 @@ def test_move_is_atomic_and_leaves_positions_contiguous(client_a, board):
         move(client_a, board["a"][1], board[target], pos)
     for stage in (board["applied"], board["interviewing"]):
         assert [p for _, p in column(stage)] == list(range(len(column(stage))))
+
+
+def test_move_into_applied_sets_todays_date(client_a, user_a, stage_of, make_application):
+    card = make_application(user_a, stage_of(user_a, "Interested"))
+    move(client_a, card, stage_of(user_a, "Applied"), 0)
+    card.refresh_from_db()
+    assert card.date_applied == timezone.localdate()
+
+
+def test_move_into_applied_keeps_an_existing_date(client_a, user_a, stage_of, make_application):
+    old = date(2026, 1, 5)
+    card = make_application(user_a, stage_of(user_a, "Interested"), date_applied=old)
+    move(client_a, card, stage_of(user_a, "Applied"), 0)
+    card.refresh_from_db()
+    assert card.date_applied == old
+
+
+def test_move_into_other_stages_leaves_date_empty(client_a, user_a, stage_of, make_application):
+    card = make_application(user_a, stage_of(user_a, "Interested"))
+    move(client_a, card, stage_of(user_a, "Interviewing"), 0)
+    card.refresh_from_db()
+    assert card.date_applied is None
