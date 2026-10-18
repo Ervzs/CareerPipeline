@@ -5,7 +5,7 @@ import { json, makeApplication, makeStage, renderWithProviders } from '../../tes
 import { ApplicationDetailsPanel } from './ApplicationDetailsPanel'
 
 const fetchMock = vi.fn<typeof fetch>()
-const stages = [makeStage(1, 'Wishlist', 0), makeStage(2, 'Applied', 1)]
+const stages = [makeStage(1, 'Interested', 0), makeStage(2, 'Applied', 1)]
 
 const full = makeApplication({
   id: 5,

@@ -166,11 +166,11 @@ def test_deleting_a_card_closes_the_gap(client_a, user_a, stage_of, make_applica
 
 
 def test_list_is_in_board_order_with_nested_company(client_a, user_a, stage_of, make_application):
-    wishlist, applied, offer = (stage_of(user_a, n) for n in ("Interested", "Applied", "Offer"))
+    interested, applied, offer = (stage_of(user_a, n) for n in ("Interested", "Applied", "Offer"))
     make_application(user_a, offer, title="offer-0")
     make_application(user_a, applied, title="applied-0")
     make_application(user_a, applied, title="applied-1")
-    make_application(user_a, wishlist, title="wish-0")
+    make_application(user_a, interested, title="wish-0")
 
     body = client_a.get(URL).json()
     assert [c["job_title"] for c in body] == ["wish-0", "applied-0", "applied-1", "offer-0"]

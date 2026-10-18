@@ -106,7 +106,7 @@ erDiagram
         string job_title
         text job_description
         string listing_url
-        date date_applied "null = wishlist"
+        date date_applied "null = interested"
         int position "order inside the column"
         datetime created_at
         datetime updated_at

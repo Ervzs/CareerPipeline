@@ -5,7 +5,7 @@ import { json, makeStage, renderWithProviders } from '../../test/utils'
 import { StageSettingsPanel } from './StageSettingsPanel'
 
 const fetchMock = vi.fn<typeof fetch>()
-let stages = [makeStage(1, 'Wishlist', 0), makeStage(2, 'Applied', 1)]
+let stages = [makeStage(1, 'Interested', 0), makeStage(2, 'Applied', 1)]
 
 const apiError = (code: string, message: string, details = {}) => ({
   error: { code, message, details },
@@ -16,7 +16,7 @@ const requests = () =>
   )
 
 beforeEach(() => {
-  stages = [makeStage(1, 'Wishlist', 0), makeStage(2, 'Applied', 1)]
+  stages = [makeStage(1, 'Interested', 0), makeStage(2, 'Applied', 1)]
   vi.stubGlobal('fetch', fetchMock)
   fetchMock.mockImplementation(async (url, init) => {
     const path = String(url)
@@ -44,7 +44,7 @@ test('lists the stages in order', async () => {
     within(list)
       .getAllByRole('listitem')
       .map((li) => li.textContent),
-  ).toEqual([expect.stringContaining('Wishlist'), expect.stringContaining('Applied')])
+  ).toEqual([expect.stringContaining('Interested'), expect.stringContaining('Applied')])
 })
 
 test('adds a stage and clears the input', async () => {

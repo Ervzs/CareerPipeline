@@ -105,7 +105,7 @@ def test_applications_older_than_twelve_weeks_are_not_in_the_weekly_chart(client
     assert body["totals"]["applied"] == 1  # but they still count toward the totals
 
 
-def test_wishlist_cards_without_a_date_are_not_in_the_weekly_chart(client_a, user_a, add):
+def test_interested_cards_without_a_date_are_not_in_the_weekly_chart(client_a, user_a, add):
     add(user_a, "Interested")
 
     assert sum(w["count"] for w in client_a.get(URL).json()["weeks"]) == 0

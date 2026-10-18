@@ -15,7 +15,7 @@ const weeks = (counts: number[]) =>
 const dashboard = (overrides = {}) => ({
   totals: { applications: 7, applied: 5 },
   stages: [
-    { stage: 1, name: 'Wishlist', order: 0, count: 2 },
+    { stage: 1, name: 'Interested', order: 0, count: 2 },
     { stage: 2, name: 'Applied', order: 1, count: 3 },
     { stage: 3, name: 'Interviewing', order: 2, count: 2 },
     { stage: 4, name: 'Offer', order: 3, count: 0 },
@@ -49,7 +49,7 @@ test('lists every stage, including empty ones, with its count', async () => {
   const list = await screen.findByRole('list', { name: 'Applications per stage' })
   const rows = within(list).getAllByRole('listitem')
   expect(rows.map((row) => row.textContent)).toEqual([
-    'Wishlist2',
+    'Interested2',
     'Applied3',
     'Interviewing2',
     'Offer0',

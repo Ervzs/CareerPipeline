@@ -6,7 +6,7 @@ import BoardPage from './BoardPage'
 
 const fetchMock = vi.fn<typeof fetch>()
 
-const stages = [makeStage(1, 'Wishlist', 0), makeStage(2, 'Applied', 1), makeStage(3, 'Offer', 2)]
+const stages = [makeStage(1, 'Interested', 0), makeStage(2, 'Applied', 1), makeStage(3, 'Offer', 2)]
 
 function serve(applications: unknown[]) {
   fetchMock.mockImplementation(async (url) => {
@@ -47,8 +47,8 @@ test('empty columns invite the user to add something', async () => {
 
   renderWithProviders(<BoardPage />)
 
-  const wishlist = await screen.findByRole('region', { name: 'Wishlist' })
-  expect(within(wishlist).getByText('No applications here yet')).toBeInTheDocument()
+  const interested = await screen.findByRole('region', { name: 'Interested' })
+  expect(within(interested).getByText('No applications here yet')).toBeInTheDocument()
 })
 
 test('a board with no applications at all explains what to do', async () => {
@@ -68,7 +68,7 @@ test('a failed load shows an error and can be retried', async () => {
   serve([])
   await userEvent.click(screen.getByRole('button', { name: 'Try again' }))
 
-  expect(await screen.findByRole('region', { name: 'Wishlist' })).toBeInTheDocument()
+  expect(await screen.findByRole('region', { name: 'Interested' })).toBeInTheDocument()
 })
 
 test('clicking a card opens its details beside the board, and closing hides them', async () => {

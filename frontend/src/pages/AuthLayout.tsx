@@ -40,7 +40,7 @@ export function AuthLayout({
         <p className="font-display text-xl font-bold">CareerPipeline</p>
         <div>
           <h2 className="mb-10 max-w-sm text-4xl font-bold leading-tight">
-            Every application, from wishlist to offer.
+            Every application, from interest to offer.
           </h2>
           <RouteMap />
         </div>
