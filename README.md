@@ -39,7 +39,7 @@ Saved jobs go to the **Applied** column, dated today. The same job is never adde
 1. **Sign up**, or press **Try the demo** to explore a ready-made board.
 2. **Add an application.** Only the job title and the job link are needed; company, date and
    description are optional.
-3. **Drag cards between columns** as your search moves forward: Wishlist, Applied, Interviewing,
+3. **Drag cards between columns** as your search moves forward: Interested, Applied, Interviewing,
    Offer, Rejected.
 4. **Click a card** to see its details, notes about the company, and an activity timeline where you
    log calls, interviews and follow-ups.

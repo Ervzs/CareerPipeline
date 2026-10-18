@@ -36,10 +36,10 @@ def test_seed_demo_dates_are_believable():
     call_command("seed_demo")
     demo = User.objects.get(email=settings.DEMO_EMAIL)
     today = datetime.date.today()
-    wishlist = demo.applications.filter(stage__name="Wishlist")
+    wishlist = demo.applications.filter(stage__name="Interested")
     assert wishlist.exists()
     assert all(app.date_applied is None for app in wishlist)
-    applied = demo.applications.exclude(stage__name="Wishlist")
+    applied = demo.applications.exclude(stage__name="Interested")
     assert all(app.date_applied is not None for app in applied)
     assert all(today - datetime.timedelta(days=90) <= app.date_applied <= today for app in applied)
 

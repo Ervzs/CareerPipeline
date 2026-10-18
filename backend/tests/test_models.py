@@ -11,7 +11,7 @@ User = get_user_model()
 def test_new_user_gets_default_stages_in_order():
     user = User.objects.create_user(email="new@example.com", password="pw-123456789")
     names = list(user.stages.values_list("name", flat=True))
-    assert names == ["Wishlist", "Applied", "Interviewing", "Offer", "Rejected"]
+    assert names == ["Interested", "Applied", "Interviewing", "Offer", "Rejected"]
     assert list(user.stages.values_list("order", flat=True)) == [0, 1, 2, 3, 4]
 
 

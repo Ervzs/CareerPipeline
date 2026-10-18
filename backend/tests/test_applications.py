@@ -18,7 +18,7 @@ def test_applications_require_authentication(api_client):
 
 def test_create_accepts_a_very_long_url(client_a, user_a, stage_of):
     long_url = "https://jobs.test/listing?ref=" + "x" * 3000
-    stage = stage_of(user_a, "Wishlist")
+    stage = stage_of(user_a, "Interested")
     response = client_a.post(URL, payload(stage, listing_url=long_url), format="json")
     assert response.status_code == 201
     assert response.json()["listing_url"] == long_url
@@ -26,7 +26,7 @@ def test_create_accepts_a_very_long_url(client_a, user_a, stage_of):
 
 def test_create_with_existing_company(client_a, user_a, stage_of):
     company = Company.objects.create(user=user_a, name="Acme", notes="Remote friendly")
-    stage = stage_of(user_a, "Wishlist")
+    stage = stage_of(user_a, "Interested")
     response = client_a.post(URL, payload(stage, company=company.id), format="json")
     assert response.status_code == 201
     body = response.json()
@@ -166,7 +166,7 @@ def test_deleting_a_card_closes_the_gap(client_a, user_a, stage_of, make_applica
 
 
 def test_list_is_in_board_order_with_nested_company(client_a, user_a, stage_of, make_application):
-    wishlist, applied, offer = (stage_of(user_a, n) for n in ("Wishlist", "Applied", "Offer"))
+    wishlist, applied, offer = (stage_of(user_a, n) for n in ("Interested", "Applied", "Offer"))
     make_application(user_a, offer, title="offer-0")
     make_application(user_a, applied, title="applied-0")
     make_application(user_a, applied, title="applied-1")

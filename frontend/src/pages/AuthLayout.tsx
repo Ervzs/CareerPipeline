@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 const ROUTE = [
-  { name: 'Wishlist', color: 'var(--color-stage-0)' },
+  { name: 'Interested', color: 'var(--color-stage-0)' },
   { name: 'Applied', color: 'var(--color-stage-1)' },
   { name: 'Interviewing', color: 'var(--color-stage-2)' },
   { name: 'Offer', color: 'var(--color-stage-3)' },

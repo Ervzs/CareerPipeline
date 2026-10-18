@@ -17,7 +17,7 @@ def test_list_returns_default_stages_in_order(client_a):
     response = client_a.get(URL)
     assert response.status_code == 200
     assert [s["name"] for s in response.json()] == [
-        "Wishlist",
+        "Interested",
         "Applied",
         "Interviewing",
         "Offer",

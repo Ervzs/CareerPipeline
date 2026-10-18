@@ -5,7 +5,7 @@ from django.core.validators import URLValidator
 from django.db import models
 from django.utils import timezone
 
-DEFAULT_STAGE_NAMES = ["Wishlist", "Applied", "Interviewing", "Offer", "Rejected"]
+DEFAULT_STAGE_NAMES = ["Interested", "Applied", "Interviewing", "Offer", "Rejected"]
 
 
 class AnyLengthURLValidator(URLValidator):

@@ -45,7 +45,7 @@ def test_capture_falls_back_to_the_first_stage(client_a, user_a, stage_of):
     stage_of(user_a, "Applied").delete()
     response = client_a.post(URL, JOB, format="json")
     assert response.status_code == 201
-    assert response.json()["stage"] == stage_of(user_a, "Wishlist").id
+    assert response.json()["stage"] == stage_of(user_a, "Interested").id
 
 
 def test_capture_requires_title_and_url(client_a):

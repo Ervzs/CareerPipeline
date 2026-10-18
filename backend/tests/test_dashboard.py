@@ -33,7 +33,7 @@ def test_empty_account_has_zero_counts_and_a_null_rate(client_a):
 
     assert body["totals"] == {"applications": 0, "applied": 0}
     assert [s["name"] for s in body["stages"]] == [
-        "Wishlist",
+        "Interested",
         "Applied",
         "Interviewing",
         "Offer",
@@ -51,7 +51,7 @@ def test_empty_account_has_zero_counts_and_a_null_rate(client_a):
 
 
 def test_counts_per_stage_include_empty_stages(client_a, user_a, add):
-    add(user_a, "Wishlist")
+    add(user_a, "Interested")
     add(user_a, "Applied", 3)
     add(user_a, "Applied", 5)
     add(user_a, "Offer", 20)
@@ -59,7 +59,7 @@ def test_counts_per_stage_include_empty_stages(client_a, user_a, add):
     body = client_a.get(URL).json()
 
     assert {s["name"]: s["count"] for s in body["stages"]} == {
-        "Wishlist": 1,
+        "Interested": 1,
         "Applied": 2,
         "Interviewing": 0,
         "Offer": 1,
@@ -106,7 +106,7 @@ def test_applications_older_than_twelve_weeks_are_not_in_the_weekly_chart(client
 
 
 def test_wishlist_cards_without_a_date_are_not_in_the_weekly_chart(client_a, user_a, add):
-    add(user_a, "Wishlist")
+    add(user_a, "Interested")
 
     assert sum(w["count"] for w in client_a.get(URL).json()["weeks"]) == 0
 
@@ -116,7 +116,7 @@ def test_response_rate_counts_cards_that_moved_past_applied(client_a, user_a, ad
     add(user_a, "Applied", 4)
     add(user_a, "Interviewing", 10)
     add(user_a, "Rejected", 15)
-    add(user_a, "Wishlist")  # no date: excluded from the denominator
+    add(user_a, "Interested")  # no date: excluded from the denominator
 
     rate = client_a.get(URL).json()["response_rate"]
 
@@ -153,8 +153,8 @@ def test_baseline_name_match_ignores_case(client_a, user_a, add):
 
 
 def test_a_single_stage_has_no_baseline_and_a_null_rate(client_a, user_a, add):
-    keep = user_a.stages.get(name="Wishlist")
-    add(user_a, "Wishlist", 2)
+    keep = user_a.stages.get(name="Interested")
+    add(user_a, "Interested", 2)
     user_a.stages.exclude(pk=keep.pk).delete()
 
     rate = client_a.get(URL).json()["response_rate"]
