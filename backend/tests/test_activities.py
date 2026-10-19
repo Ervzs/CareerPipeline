@@ -59,7 +59,10 @@ def test_occurred_at_can_be_set_and_kind_defaults_to_other(client_a, app_a):
 
     assert response.status_code == 201
     assert response.json()["kind"] == "other"
-    assert response.json()["occurred_at"] == "2026-03-04T10:30:00Z"
+    # Same moment; the API shows it in the server time zone.
+    assert datetime.datetime.fromisoformat(response.json()["occurred_at"]) == datetime.datetime(
+        2026, 3, 4, 10, 30, tzinfo=datetime.UTC
+    )
 
 
 def test_note_text_is_required_and_kind_must_be_valid(client_a, app_a):
