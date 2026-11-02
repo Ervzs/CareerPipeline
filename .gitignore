@@ -1,44 +1,14 @@
-# --- Secrets / env ---
-.env
-.env.*
-!.env.example
-
-# --- Python ---
-__pycache__/
-*.py[cod]
-*.egg-info/
+# Python
 .venv/
-venv/
+__pycache__/
 .pytest_cache/
 .ruff_cache/
-.coverage
-htmlcov/
 staticfiles/
-media/
 
-# --- Node ---
-node_modules/
-dist/
-coverage/
-*.tsbuildinfo
-npm-debug.log*
+# Secrets
+.env
 
-# --- Editors / OS ---
-.vscode/*
-!.vscode/extensions.json
-.idea/
-Thumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-.DS_Store
-
-# --- Local-only files (not for repository visitors) ---
-DEPLOY.md
-PLAN.md
+# Local only
+docs/
+plan.md
 CLAUDE.md
-docs/CareerPipeline-Build-Guide.docx
-docs/CareerPipeline-Build-Guide.pdf
-~$*
-
-# --- Personal tutorial docs (kept local, not pushed) ---
-docs/*.md
