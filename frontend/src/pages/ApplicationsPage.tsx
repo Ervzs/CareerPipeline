@@ -1,7 +1,7 @@
 import { LogOut, Plus } from "lucide-react"
 
+import { ApplicationBoard } from "@/components/ApplicationBoard"
 import { ApplicationForm } from "@/components/ApplicationForm"
-import { ApplicationTable } from "@/components/ApplicationTable"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { useApplications } from "@/hooks/useApplications"
@@ -17,7 +17,7 @@ export function ApplicationsPage({ user }: ApplicationsPageProps) {
   const logout = useLogout()
 
   return (
-    <main className="mx-auto max-w-4xl space-y-4 p-4 sm:space-y-6 sm:p-6">
+    <main className="mx-auto max-w-6xl space-y-4 p-4 sm:space-y-6 sm:p-6">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-semibold sm:text-3xl">Applications</h1>
@@ -47,7 +47,7 @@ export function ApplicationsPage({ user }: ApplicationsPageProps) {
         <p className="text-muted-foreground">No applications yet. Add your first one.</p>
       )}
 
-      {!!applications.data?.length && <ApplicationTable applications={applications.data} />}
+      {!!applications.data?.length && <ApplicationBoard applications={applications.data} />}
     </main>
   )
 }
