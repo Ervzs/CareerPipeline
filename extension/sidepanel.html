@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CareerPipeline</title>
+    <style>
+      body {
+        margin: 16px;
+        font-family: system-ui, sans-serif;
+        font-size: 14px;
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+      }
+      input {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        margin-top: 4px;
+        padding: 6px 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CareerPipeline</h1>
+
+    <form id="job">
+      <label>Company <input name="company" required /></label>
+      <label>Job title <input name="job_title" required /></label>
+      <label>Job link <input name="job_url" type="url" /></label>
+      <button type="submit">Save</button>
+    </form>
+
+    <p id="message"></p>
+
+    <script src="sidepanel.js"></script>
+  </body>
+</html>
