@@ -12,7 +12,7 @@ export function ApplicationBoard({ applications }: ApplicationBoardProps) {
       {STATUSES.map((status) => {
         const cards = applications.filter((application) => application.status === status)
         return (
-          <section key={status} className="space-y-2">
+          <section key={status} className="space-y-2 rounded-xl border bg-muted/40 p-2">
             <h2 className="flex items-center gap-2">
               <StatusBadge status={status} />
               <span className="text-sm text-muted-foreground">{cards.length}</span>
