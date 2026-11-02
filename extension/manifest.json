@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "CareerPipeline",
+  "version": "1.0.0",
+  "description": "Save job postings to CareerPipeline.",
+  "action": { "default_title": "Open CareerPipeline" },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "background": { "service_worker": "background.js" },
+  "permissions": ["sidePanel"],
+  "host_permissions": ["http://localhost:8000/*"],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.jobstreet.com/*",
+        "https://*.linkedin.com/*",
+        "https://*.indeed.com/*"
+      ],
+      "js": ["content.js"]
+    }
+  ]
+}
