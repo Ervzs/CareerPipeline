@@ -7,7 +7,7 @@
   "side_panel": { "default_path": "sidepanel.html" },
   "background": { "service_worker": "background.js" },
   "permissions": ["sidePanel"],
-  "host_permissions": ["http://localhost:8000/*"],
+  "host_permissions": ["https://career-pipeline-fawn.vercel.app/*"],
   "content_scripts": [
     {
       "matches": [

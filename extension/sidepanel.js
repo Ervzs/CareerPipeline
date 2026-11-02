@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000"
+const API_URL = "https://career-pipeline-fawn.vercel.app"
 
 const jobForm = document.getElementById("job")
 const message = document.getElementById("message")
