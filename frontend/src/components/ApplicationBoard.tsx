@@ -8,11 +8,14 @@ interface ApplicationBoardProps {
 
 export function ApplicationBoard({ applications }: ApplicationBoardProps) {
   return (
-    <div className="grid gap-4 lg:flex-1 lg:grid-cols-5 lg:gap-6">
+    <div className="grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-5 lg:gap-6">
       {STATUSES.map((status) => {
         const cards = applications.filter((application) => application.status === status)
         return (
-          <section key={status} className="space-y-2 rounded-xl border bg-muted/40 p-3">
+          <section
+            key={status}
+            className="space-y-2 rounded-xl border bg-muted/40 p-3 lg:overflow-y-auto"
+          >
             <h2 className="flex items-center gap-2">
               <StatusBadge status={status} />
               <span className="text-sm text-muted-foreground">{cards.length}</span>

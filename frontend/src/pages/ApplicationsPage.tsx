@@ -17,7 +17,7 @@ export function ApplicationsPage({ user }: ApplicationsPageProps) {
   const logout = useLogout()
 
   return (
-    <main className="flex min-h-svh flex-col gap-4 p-4 sm:gap-6 sm:p-6">
+    <main className="flex min-h-svh flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:h-svh">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-semibold sm:text-3xl">Applications</h1>
