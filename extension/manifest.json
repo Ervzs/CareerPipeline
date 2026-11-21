@@ -15,7 +15,7 @@
         "https://*.linkedin.com/*",
         "https://*.indeed.com/*"
       ],
-      "js": ["content.js"]
+      "js": ["sites.js", "content.js"]
     }
   ]
 }

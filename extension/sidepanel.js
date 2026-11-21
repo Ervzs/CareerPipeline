@@ -28,10 +28,15 @@ async function api(path, options = {}) {
   return data
 }
 
+let lastJob = ""
+
 async function render() {
-  message.textContent = ""
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   const job = await chrome.tabs.sendMessage(tab.id, "readJob").catch(() => null)
+  const key = JSON.stringify(job)
+  if (key === lastJob) return
+  lastJob = key
+  message.textContent = ""
   jobForm.elements.company.value = job?.company ?? ""
   jobForm.elements.job_title.value = job?.job_title ?? ""
   jobForm.elements.job_url.value = job?.job_url ?? ""
@@ -54,6 +59,10 @@ jobForm.addEventListener("submit", async (event) => {
 chrome.tabs.onActivated.addListener(render)
 chrome.tabs.onUpdated.addListener((_tabId, change, tab) => {
   if (tab.active && change.status === "complete") render()
+})
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message === "jobChanged") render()
 })
 
 render()
